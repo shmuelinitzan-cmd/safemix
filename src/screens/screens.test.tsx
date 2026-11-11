@@ -22,12 +22,28 @@ describe('card screen', () => {
   it('has the four blocks and the approve button', () => {
     for (const t of ['Identity and properties', 'Waste container', 'NFPA 704', 'Exposure hazards by route', 'Approve and save']) expect(html).toContain(t)
   })
-  it('shows a converted label only when the source value is not in °C', () => {
+  it('converts a boiling point given in °F, with a "converted" label', () => {
     const f = { ...acetone, fields: { ...acetone.fields, bp: { ...acetone.fields.bp!, value: '133 °F at 760 mmHg' } } }
     const h2 = renderToStaticMarkup(<CardScreen card={f} saved onSave={noop} onDelete={noop} onBack={() => {}} />)
     expect(h2).toContain('56.1 °C')
-    expect(h2).toContain('(converted)')
-    expect(html).not.toContain('(converted)')
+  })
+  it('vapour pressure: first value only, temperature converted, full text only in the details', () => {
+    expect(html).toContain('180 mmHg at 68 °F')
+    expect(html).toContain('≈ 180 mmHg at 20 °C')
+    expect(html).toContain('<em>(converted)</em>')
+    // the second value appears only inside a details block, as the "Original text" row
+    const idx = html.indexOf('270 mmHg at 86')
+    expect(idx).toBeGreaterThan(-1)
+    expect(html.lastIndexOf('<details', idx)).toBeGreaterThan(html.lastIndexOf('</details>', idx))
+    expect(html).toContain('Original text')
+  })
+  it('badges use short names, with the full name on hover and in the details', () => {
+    expect(html).toContain('>PubChem · HSDB</a>')
+    expect(html).toContain('>PubChem · CAMEO</a>')
+    expect(html).toContain('>PubChem · ICSC</a>')
+    expect(html).not.toContain('Hazardous Substances Data Ba<')
+    expect(html).toContain('title="PubChem · via Hazardous Substances Data Bank (HSDB)')
+    expect(html).toContain('Hazardous Substances Data Bank (HSDB)</dd>')
   })
 })
 

@@ -1,13 +1,46 @@
 import { useState } from 'react'
 import type { Field, FieldKey } from '../types/card.ts'
 import { FIELD_LABELS, NO_DATA_LABEL, WASTE_CATEGORIES } from '../types/card.ts'
-import { convertPressure, convertTemperature } from '../lib/units.ts'
+import { convertTemperature, vapourPressureForCard } from '../lib/units.ts'
+import { shortSource } from '../lib/sources.ts'
 
 const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'You (edited)', app: 'Rule' }
 
-function converted(key: FieldKey, f: Field): string | undefined {
-  if (key === 'bp' || key === 'mp') return convertTemperature(f.value)
-  if (key === 'vapor_pressure') return convertPressure(f.value)
+// What the card shows for a value, and a converted version when the unit differs.
+// The stored text is never changed; the full original goes in the source details.
+function display(key: FieldKey, f: Field): { shown: string; converted?: string } {
+  if (key === 'vapor_pressure') return vapourPressureForCard(f.value)
+  if (key === 'bp' || key === 'mp') return { shown: f.value, converted: convertTemperature(f.value) }
+  return { shown: f.value }
+}
+
+function badgeSuffix(f: Field): string | undefined {
+  const short = shortSource(f.upstream)
+  return short && short !== 'PubChem' ? short : undefined
+}
+
+function Details({ field, shown }: { field: Field; shown: string }) {
+  const rows: [string, string | undefined][] = [
+    ['Source', SOURCE_NAMES[field.source]],
+    ['Via', field.upstream],
+    ['Citation', field.upstream_citation],
+    ['Original text', field.value !== shown ? field.value : undefined],
+    ['Retrieved', field.retrieved_at],
+    ['Link', field.source_url || undefined],
+  ]
+  return (
+    <details className="mt-1 text-xs text-slate-600">
+      <summary className="cursor-pointer text-slate-500">Source details</summary>
+      <dl className="mt-1 grid grid-cols-[6rem_1fr] gap-x-2 gap-y-0.5">
+        {rows.filter(([, v]) => v).map(([l, v]) => (
+          <div key={l} className="contents">
+            <dt className="text-slate-500">{l}</dt>
+            <dd className="break-words">{l === 'Link' ? <a href={v} target="_blank" rel="noreferrer" className="underline">{v}</a> : v}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  )
 }
 
 export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Field; onEdit: (value: string) => void }) {
@@ -15,7 +48,8 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
   const [draft, setDraft] = useState('')
   const start = () => { setDraft(field?.value ?? ''); setEditing(true) }
   const save = () => { onEdit(draft); setEditing(false) }
-  const conv = field && converted(k, field)
+  const disp = field && display(k, field)
+  const conv = disp?.converted
   const isRule = field?.origin === 'rule' && field.status !== 'approved'
 
   return (
@@ -40,7 +74,7 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
             {field ? (
               <span>
                 {field.quantity === 'relative_density' && <span className="text-slate-500">relative density </span>}
-                {field.value}
+                {disp!.shown}
                 {field.unit && k === 'mw' ? ` ${field.unit}` : ''}
                 {field.condition && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">applies to: {field.condition}</span>}
               </span>
@@ -51,13 +85,14 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
             {field && (
               <a href={field.source_url || undefined} target="_blank" rel="noreferrer"
                 className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700 hover:bg-slate-200"
-                title={[field.upstream && `via ${field.upstream}`, `retrieved ${field.retrieved_at}`].filter(Boolean).join(' · ')}>
-                {SOURCE_NAMES[field.source]}{field.upstream && field.source === 'pubchem' ? ` · ${field.upstream.replace(/\s*\(.*\)$/, '').slice(0, 28)}` : ''}
+                title={[SOURCE_NAMES[field.source], field.upstream && `via ${field.upstream}`, `retrieved ${field.retrieved_at}`].filter(Boolean).join(' · ')}>
+                {SOURCE_NAMES[field.source]}{field.source === 'pubchem' && badgeSuffix(field) ? ` · ${badgeSuffix(field)}` : ''}
               </a>
             )}
             <button onClick={start} className="text-sm text-emerald-700 underline">Edit</button>
           </div>
         )}
+        {field && !editing && <Details field={field} shown={disp!.shown} />}
         {isRule && <p className="mt-1 text-xs text-amber-700">Rule-based, confirm with lab instructions.</p>}
         {field?.note && <p className="mt-1 text-xs text-slate-600">{field.note}{field.source_value ? ` (PubChem had: ${field.source_value})` : ''}</p>}
       </div>
