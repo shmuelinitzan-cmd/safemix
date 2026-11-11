@@ -37,8 +37,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <h1 className="text-xl font-bold text-emerald-700">SafeMix</h1>
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <h1 className="text-3xl font-bold text-emerald-700">SafeMix</h1>
           <span className="text-sm text-slate-500">Chemical safety cards</span>
         </div>
       </header>
