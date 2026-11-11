@@ -11,7 +11,9 @@ export const isOrganic = (card: ChemicalCard) => {
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47]
 
 export async function fetchStructure(cid: number, date = new Date().toISOString().slice(0, 10)): Promise<Structure | undefined> {
-  const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG`
+  // Asked for large (1000x1000): PubChem then draws the molecule bigger, so it stays sharp
+  // when the empty margin is trimmed for display. Same PNG endpoint, same source.
+  const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG?image_size=1000x1000`
   try {
     const res = await fetch(url)
     if (!res.ok) return undefined

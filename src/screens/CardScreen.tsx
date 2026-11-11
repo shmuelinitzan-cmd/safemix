@@ -3,6 +3,7 @@ import type { ChemicalCard, FieldKey } from '../types/card.ts'
 import { approveCard, editField, isFullyApproved } from '../lib/cards.ts'
 import FieldRow from '../components/FieldRow.tsx'
 import NfpaDiamond from '../components/NfpaDiamond.tsx'
+import StructureImage from '../components/StructureImage.tsx'
 
 const BLOCKS: { title: string; keys: FieldKey[] }[] = [
   { title: 'Identity and properties', keys: ['name', 'formula', 'mw', 'bp', 'mp', 'density', 'vapor_pressure'] },
@@ -40,8 +41,7 @@ export default function CardScreen({ card: initial, saved, onSave, onDelete, onB
       <div className="flex flex-wrap items-center gap-4">
         {card.structure && (
           <figure className="m-0 text-center">
-            <img src={card.structure.data_url} width={280} height={280} alt={`2D structure of ${card.fields.name?.value ?? 'the chemical'}`}
-              className="h-auto w-full max-w-[280px] rounded border border-slate-200 bg-white" />
+            <StructureImage structure={card.structure} name={card.fields.name?.value ?? 'the chemical'} />
             <figcaption className="mt-1">
               <a href={card.structure.source_url} target="_blank" rel="noreferrer"
                 className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700 hover:bg-slate-200"

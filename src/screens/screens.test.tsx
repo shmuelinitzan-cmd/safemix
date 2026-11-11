@@ -36,7 +36,7 @@ describe('structure picture on the card', () => {
   it('shows the picture with alt text and a PubChem badge next to name and formula', () => {
     expect(html).toContain('alt="2D structure of Acetone"')
     expect(html).toContain('src="data:image/png;base64,')
-    expect(html).toMatch(/href="https:\/\/pubchem\.ncbi\.nlm\.nih\.gov\/rest\/pug\/compound\/cid\/180\/PNG"[^>]*>PubChem<\/a>/)
+    expect(html).toMatch(/href="https:\/\/pubchem\.ncbi\.nlm\.nih\.gov\/rest\/pug\/compound\/cid\/180\/PNG\?image_size=1000x1000"[^>]*>PubChem<\/a>/)
     expect(html.indexOf('<img')).toBeLessThan(html.indexOf('<h2'))
     expect(html).toContain('C3H6O')
   })

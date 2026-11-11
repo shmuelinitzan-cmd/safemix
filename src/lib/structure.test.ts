@@ -21,7 +21,7 @@ describe('which cards get a structure', () => {
     for (const c of cards.filter(isOrganic)) {
       expect(c.structure!.data_url.startsWith('data:image/png;base64,')).toBe(true)
       expect(c.structure!.source).toBe('pubchem')
-      expect(c.structure!.source_url).toMatch(/^https:\/\/pubchem\.ncbi\.nlm\.nih\.gov\/rest\/pug\/compound\/cid\/\d+\/PNG$/)
+      expect(c.structure!.source_url).toMatch(/^https:\/\/pubchem\.ncbi\.nlm\.nih\.gov\/rest\/pug\/compound\/cid\/\d+\/PNG\?image_size=1000x1000$/)
     }
   })
 })
@@ -31,7 +31,7 @@ describe('fetching', () => {
     const fetchMock = vi.fn(async () => new Response(PNG, { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
     const s = await fetchStructure(180, '2026-11-11')
-    expect(fetchMock).toHaveBeenCalledWith('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/PNG')
+    expect(fetchMock).toHaveBeenCalledWith('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/PNG?image_size=1000x1000')
     expect(s).toMatchObject({ source: 'pubchem', status: 'pending', retrieved_at: '2026-11-11' })
     expect(s!.data_url).toBe(`data:image/png;base64,${btoa(String.fromCharCode(...PNG))}`)
   })
