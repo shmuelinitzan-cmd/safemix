@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { approveCard, applyCorrections, cardFromLookup } from '../src/lib/cards.ts'
 import { MANUAL_CORRECTIONS } from '../src/data/manual-corrections.ts'
+import { attachStructure } from '../src/lib/structure.ts'
 import type { ChemicalCard } from '../src/types/card.ts'
 
 const src = process.argv[2]
@@ -10,18 +11,18 @@ if (!src) throw new Error('Give the path to review.json')
 const snapshot = JSON.parse(readFileSync(src, 'utf8'))
 const today = new Date().toISOString().slice(0, 10)
 
-const cards: ChemicalCard[] = Object.values(snapshot).map((entry) => {
+const cards: ChemicalCard[] = await Promise.all(Object.values(snapshot).map(async (entry) => {
   const r = (entry as { pubchem: Parameters<typeof cardFromLookup>[0] }).pubchem
   const draft = cardFromLookup(r)
   // Dates stay those of the reviewed retrieval.
   const reviewed = r.fields.name!.retrieved_at
   draft.created_at = draft.updated_at = reviewed
   const corrected = applyCorrections(draft, MANUAL_CORRECTIONS, today)
-  const approved = approveCard(corrected)
+  const approved = approveCard(await attachStructure(corrected)) // organic cards get the PubChem picture
   // The waste container is only a rule-based suggestion: it stays pending until the lab confirms it.
   if (approved.fields.waste_container) approved.fields.waste_container.status = 'pending'
   return approved
-})
+}))
 
 mkdirSync('src/data', { recursive: true })
 writeFileSync('src/data/demo-cards.json', JSON.stringify(cards, null, 1) + '\n')

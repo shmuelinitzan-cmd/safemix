@@ -28,6 +28,15 @@ export interface Field {
   upstream_citation?: string
 }
 
+// 2D structure picture from PubChem, stored with the card (as a data URL) so it works offline.
+export interface Structure {
+  data_url: string
+  source: 'pubchem'
+  source_url: string
+  retrieved_at: string
+  status: Status
+}
+
 export const FIELD_KEYS = [
   'name', 'formula', 'mw',
   'bp', 'mp', 'density', 'vapor_pressure',
@@ -59,6 +68,8 @@ export interface ChemicalCard {
   // Search key used to find the record; not shown as a card column.
   cas?: Field
   pubchem_cid?: number
+  // Only for organic chemicals (formula contains carbon).
+  structure?: Structure
   created_at: string
   updated_at: string
   // A key that is absent has no data: the UI shows "No data from approved sources".

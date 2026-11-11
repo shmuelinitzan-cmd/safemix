@@ -31,6 +31,21 @@ describe('card screen', () => {
   })
 })
 
+describe('structure picture on the card', () => {
+  const html = renderToStaticMarkup(<CardScreen card={acetone} saved onSave={noop} onDelete={noop} onBack={() => {}} />)
+  it('shows the picture with alt text and a PubChem badge next to name and formula', () => {
+    expect(html).toContain('alt="2D structure of Acetone"')
+    expect(html).toContain('src="data:image/png;base64,')
+    expect(html).toMatch(/href="https:\/\/pubchem\.ncbi\.nlm\.nih\.gov\/rest\/pug\/compound\/cid\/180\/PNG"[^>]*>PubChem<\/a>/)
+    expect(html.indexOf('<img')).toBeLessThan(html.indexOf('<h2'))
+    expect(html).toContain('C3H6O')
+  })
+  it('shows no picture on an inorganic card', () => {
+    const naoh = cards.find((c) => c.cas?.value === '1310-73-2')!
+    expect(renderToStaticMarkup(<CardScreen card={naoh} saved onSave={noop} onDelete={noop} onBack={() => {}} />)).not.toContain('<img')
+  })
+})
+
 describe('library screen', () => {
   it('lists the demo cards', () => {
     const html = renderToStaticMarkup(<Library cards={cards} onOpen={() => {}} onLookup={noop} />)

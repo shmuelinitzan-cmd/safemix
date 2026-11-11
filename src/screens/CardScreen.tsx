@@ -37,8 +37,24 @@ export default function CardScreen({ card: initial, saved, onSave, onDelete, onB
       <div role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
         Draft for educational use. Verify against the supplier SDS before use.
       </div>
-      <h2 className="text-2xl font-bold">{card.fields.name?.value ?? 'Unnamed chemical'}</h2>
-      <p className="mb-4 text-sm text-slate-500">
+      <div className="flex flex-wrap items-center gap-4">
+        {card.structure && (
+          <figure className="m-0 text-center">
+            <img src={card.structure.data_url} width={120} height={120} alt={`2D structure of ${card.fields.name?.value ?? 'the chemical'}`}
+              className="rounded border border-slate-200 bg-white" />
+            <figcaption className="mt-1">
+              <a href={card.structure.source_url} target="_blank" rel="noreferrer"
+                className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700 hover:bg-slate-200"
+                title={`retrieved ${card.structure.retrieved_at}`}>PubChem</a>
+            </figcaption>
+          </figure>
+        )}
+        <div>
+          <h2 className="text-2xl font-bold">{card.fields.name?.value ?? 'Unnamed chemical'}</h2>
+          <p className="text-slate-600">{card.fields.formula?.value}</p>
+        </div>
+      </div>
+      <p className="mb-4 mt-2 text-sm text-slate-500">
         {saved && approved ? 'Approved and saved' : saved ? 'Saved, with changes to approve' : 'Not saved yet. Check every value, then approve.'}
       </p>
       <div className="space-y-4">

@@ -5,6 +5,7 @@ import CardScreen from './screens/CardScreen.tsx'
 import { db, seedDemo } from './lib/db.ts'
 import { lookup } from './lib/pubchem.ts'
 import { cardFromLookup } from './lib/cards.ts'
+import { attachStructure } from './lib/structure.ts'
 import type { ChemicalCard } from './types/card.ts'
 
 type View = { type: 'library' } | { type: 'card'; card: ChemicalCard; saved: boolean }
@@ -28,7 +29,7 @@ export default function App() {
   }, [])
 
   const lookupChemical = async (q: string) => {
-    const draft = cardFromLookup(await lookup(q))
+    const draft = await attachStructure(cardFromLookup(await lookup(q)))
     const existing = cards?.find((c) => c.id === draft.id)
     setView(existing ? { type: 'card', card: existing, saved: true } : { type: 'card', card: draft, saved: false })
   }

@@ -52,11 +52,13 @@ export function approveCard(card: ChemicalCard): ChemicalCard {
     const f = card.fields[k]
     if (f) fields[k] = { ...f, status: 'approved' }
   }
-  return { ...card, fields, updated_at: today() }
+  const structure = card.structure && { ...card.structure, status: 'approved' as const }
+  return { ...card, fields, structure, updated_at: today() }
 }
 
 export const isFullyApproved = (card: ChemicalCard) =>
-  FIELD_KEYS.every((k) => !card.fields[k] || card.fields[k]!.status === 'approved')
+  FIELD_KEYS.every((k) => !card.fields[k] || card.fields[k]!.status === 'approved') &&
+  (!card.structure || card.structure.status === 'approved')
 
 export function matches(card: ChemicalCard, query: string): boolean {
   const q = query.trim().toLowerCase()
