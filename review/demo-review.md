@@ -1,0 +1,260 @@
+# Card values for review (retrieved 2026-11-10)
+
+Values are shown exactly as the source gave them. "converted" is arithmetic shown for convenience only and is NOT stored.
+
+## acetone  (PubChem CID 180, title "Acetone", CAS 67-64-1)
+- **Chemical name**: Acetone
+  - source: PubChem record title
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180
+- **Formula**: C3H6O
+  - source: Australian Industrial Chemicals Introduction Scheme (AICIS)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Molecular-Formula
+- **MW (g/mol)**: 58.08 g/mol
+  - source: PubChem — Computed by PubChem 2.2 (PubChem release 2025.04.14)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Molecular-Weight
+- **Boiling point (°C)**: 56.08 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-4
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Boiling-Point
+- **Melting point (°C)**: -94.9 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-4
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Melting-Point
+- **Density (g/mL)**: 0.7845 g/cu cm at 20 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-4
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Density
+- **Vapour pressure (mmHg)**: 180 mmHg at 68 °F ; 270 mmHg at 86 °F (NTP, 1992)
+  - source: CAMEO Chemicals — National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Prog
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Vapor-Pressure
+- **Waste container**: organic
+  - source: rule in app code (contains carbon), needs confirmation
+  - url: https://github.com/shmuelinitzan-cmd/safemix/blob/main/src/lib/waste.ts
+- **NFPA 704 Fire**: 3
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=NFPA-Hazard-Classification
+- **NFPA 704 Health**: 1
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=NFPA-Hazard-Classification
+- **NFPA 704 Reactivity**: 0
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=NFPA-Hazard-Classification
+- **NFPA 704 Special**: _No data from approved sources_
+- **Exposure: eyes**: Redness. Pain. Blurred vision.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Signs-and-Symptoms
+- **Exposure: skin**: Dry skin.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Signs-and-Symptoms
+- **Exposure: inhalation**: Sore throat. Cough. Headache. Dizziness. Confusion. Drowsiness. Unconsciousness.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Signs-and-Symptoms
+- **Exposure: ingestion**: See Inhalation.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/180#section=Signs-and-Symptoms
+- _NIOSH cross-check only (not on the card; not split by route)_ — https://www.cdc.gov/niosh/npg/npgd0004.html, last reviewed October 30, 2019
+  - routes: inhalation, ingestion, skin and/or eye contact
+  - symptoms: irritation eyes, nose, throat; headache, dizziness, central nervous system depression; dermatitis
+
+## ethanol  (PubChem CID 702, title "Ethanol", CAS 64-17-5)
+- **Chemical name**: Ethanol
+  - source: PubChem record title
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702
+- **Formula**: C2H6O
+  - source: Australian Industrial Chemicals Introduction Scheme (AICIS)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Molecular-Formula
+- **MW (g/mol)**: 46.07 g/mol
+  - source: PubChem — Computed by PubChem 2.2 (PubChem release 2025.04.14)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Molecular-Weight
+- **Boiling point (°C)**: 78.24 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-246
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Boiling-Point
+- **Melting point (°C)**: -114.14 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-246
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Melting-Point
+- **Density (g/mL)**: 0.7893 g/cu cm at 20 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 3-246
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Density
+- **Vapour pressure (mmHg)**: 40 mmHg at 66 °F ; 50 mmHg at 77 °F (NTP, 1992)
+  - source: CAMEO Chemicals — National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Prog
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Vapor-Pressure
+- **Waste container**: organic
+  - source: rule in app code (contains carbon), needs confirmation
+  - url: https://github.com/shmuelinitzan-cmd/safemix/blob/main/src/lib/waste.ts
+- **NFPA 704 Fire**: 3
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=NFPA-Hazard-Classification
+- **NFPA 704 Health**: 2
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=NFPA-Hazard-Classification
+- **NFPA 704 Reactivity**: 0
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=NFPA-Hazard-Classification
+- **NFPA 704 Special**: _No data from approved sources_
+- **Exposure: eyes**: Redness. Pain. Burning sensation.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Signs-and-Symptoms
+- **Exposure: skin**: Dry skin.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Signs-and-Symptoms
+- **Exposure: inhalation**: Cough. Headache. Fatigue. Drowsiness.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Signs-and-Symptoms
+- **Exposure: ingestion**: Burning sensation. Headache. Confusion. Dizziness. Unconsciousness.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/702#section=Signs-and-Symptoms
+- _NIOSH cross-check only (not on the card; not split by route)_ — https://www.cdc.gov/niosh/npg/npgd0262.html, last reviewed October 30, 2019
+  - routes: inhalation, ingestion, skin and/or eye contact
+  - symptoms: irritation eyes, skin, nose; headache, drowsiness, lassitude (weakness, exhaustion), narcosis; cough; liver damage; anemia; reproductive, teratogenic effects
+
+## glacial acetic acid  (PubChem CID 176, title "Acetic Acid", CAS 64-19-7)
+- **Chemical name**: Acetic Acid
+  - source: PubChem record title
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176
+- **Formula**: C2H4O2
+  - source: Australian Industrial Chemicals Introduction Scheme (AICIS)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Molecular-Formula
+- **MW (g/mol)**: 60.05 g/mol
+  - source: PubChem — Computed by PubChem 2.2 (PubChem release 2025.04.14)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Molecular-Weight
+- **Boiling point (°C)**: 117.9 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 94th Edition. CRC Press LLC, Boca Raton: FL 2013-2014, p. 3-4
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Boiling-Point
+- **Melting point (°C)**: 16.635 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Wagner FS; Acetic Acid. Kirk-Othmer Encyclopedia of Chemical Technology. (1999-2014). New York, NY: John Wiley & Sons. Online Posting Date: 
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Melting-Point
+- **Density (g/mL)**: 1.0446 g/cu cm at 25 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 94th Edition. CRC Press LLC, Boca Raton: FL 2013-2014, p. 3-4
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Density
+- **Vapour pressure (mmHg)**: 11.4 mmHg at 68 °F ; 20 mmHg at 86 °F (NTP, 1992)
+  - source: CAMEO Chemicals — National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Prog
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Vapor-Pressure
+- **Waste container**: organic
+  - source: rule in app code (contains carbon), needs confirmation
+  - url: https://github.com/shmuelinitzan-cmd/safemix/blob/main/src/lib/waste.ts
+- **NFPA 704 Fire**: 2
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=NFPA-Hazard-Classification
+- **NFPA 704 Health**: 3
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=NFPA-Hazard-Classification
+- **NFPA 704 Reactivity**: 0
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=NFPA-Hazard-Classification
+- **NFPA 704 Special**: _No data from approved sources_
+- **Exposure: eyes**: Redness. Pain. Severe burns. Loss of vision.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Signs-and-Symptoms
+- **Exposure: skin**: Pain. Redness. Skin burns. Blisters.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Signs-and-Symptoms
+- **Exposure: inhalation**: Sore throat. Cough. Burning sensation. Headache. Dizziness. Shortness of breath. Laboured breathing.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Signs-and-Symptoms
+- **Exposure: ingestion**: Sore throat. Burning sensation. Abdominal pain. Vomiting. Shock or collapse.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/176#section=Signs-and-Symptoms
+- _NIOSH cross-check only (not on the card; not split by route)_ — https://www.cdc.gov/niosh/npg/npgd0002.html, last reviewed October 30, 2019
+  - routes: inhalation, skin and/or eye contact
+  - symptoms: irritation eyes, skin, nose, throat; eye, skin burns; skin sensitization; dental erosion; black skin, hyperkeratosis; conjunctivitis, lacrimation (discharge of tears); pharyngeal edema, chronic bronchitis
+
+## sodium hydroxide  (PubChem CID 14798, title "Sodium Hydroxide", CAS 1310-73-2)
+- **Chemical name**: Sodium Hydroxide
+  - source: PubChem record title
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798
+- **Formula**: HNaO
+  - source: Australian Industrial Chemicals Introduction Scheme (AICIS)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Molecular-Formula
+- **MW (g/mol)**: 39.997 g/mol
+  - source: PubChem — Computed by PubChem 2.2 (PubChem release 2025.09.15)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Molecular-Weight
+- **Boiling point (°C)**: 1388 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.) CRC Handbook of Chemistry and Physics.   91st ed. Boca Raton, FL: CRC Press Inc., 2010-2011, p. 4-90
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Boiling-Point
+- **Melting point (°C)**: 323 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.) CRC Handbook of Chemistry and Physics.   91st ed. Boca Raton, FL: CRC Press Inc., 2010-2011, p. 4-90
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Melting-Point
+- **Density (g/mL)**: 2.13 g/cu cm 25 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.) CRC Handbook of Chemistry and Physics.   91st ed. Boca Raton, FL: CRC Press Inc., 2010-2011, p. 4-90
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Density
+- **Vapour pressure (mmHg)**: 0 mmHg (approx) (NIOSH, 2024)
+  - source: CAMEO Chemicals
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Vapor-Pressure
+- **Waste container**: basic
+  - source: rule in app code (metal hydroxide pattern (alkali / alkaline-earth metal + OH)), needs confirmation
+  - url: https://github.com/shmuelinitzan-cmd/safemix/blob/main/src/lib/waste.ts
+- **NFPA 704 Fire**: 0
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=NFPA-Hazard-Classification
+- **NFPA 704 Health**: 3
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=NFPA-Hazard-Classification
+- **NFPA 704 Reactivity**: 1
+  - source: Hazardous Substances Data Bank (HSDB)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=NFPA-Hazard-Classification
+- **NFPA 704 Special**: _No data from approved sources_
+- **Exposure: eyes**: Redness. Pain. Blurred vision. Severe burns.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Signs-and-Symptoms
+- **Exposure: skin**: Redness. Pain. Serious skin burns. Blisters.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Signs-and-Symptoms
+- **Exposure: inhalation**: Cough. Sore throat. Burning sensation. Shortness of breath.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Signs-and-Symptoms
+- **Exposure: ingestion**: Abdominal pain. Burns in mouth and throat. Burning sensation in the throat and chest. Nausea. Vomiting. Shock or collapse.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/14798#section=Signs-and-Symptoms
+- _NIOSH cross-check only (not on the card; not split by route)_ — https://www.cdc.gov/niosh/npg/npgd0565.html, last reviewed October 30, 2019
+  - routes: inhalation, ingestion, skin and/or eye contact
+  - symptoms: irritation eyes, skin, mucous membrane; pneumonitis; eye, skin burns; temporary loss of hair
+
+## hydrogen peroxide  (PubChem CID 784, title "Hydrogen Peroxide", CAS 7722-84-1)
+- **Chemical name**: Hydrogen Peroxide
+  - source: PubChem record title
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784
+- **Formula**: H2O2
+  - source: Australian Industrial Chemicals Introduction Scheme (AICIS)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Molecular-Formula
+- **MW (g/mol)**: 34.015 g/mol
+  - source: PubChem — Computed by PubChem 2.2 (PubChem release 2025.04.14)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Molecular-Weight
+- **Boiling point (°C)**: 150.2 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-67
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Boiling-Point
+- **Melting point (°C)**: -0.43 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-67
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Melting-Point
+- **Density (g/mL)**: 1.44 g/cu cm 25 °C
+  - source: Hazardous Substances Data Bank (HSDB) — Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-67
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Density
+- **Vapour pressure (mmHg)**: 1 mmHg at 59.5 °F (NTP, 1992)
+  - source: CAMEO Chemicals — National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Prog
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Vapor-Pressure
+- **Waste container**: inorganic
+  - source: rule in app code (no carbon and no acid / base pattern matched), needs confirmation
+  - url: https://github.com/shmuelinitzan-cmd/safemix/blob/main/src/lib/waste.ts
+- **NFPA 704 Fire**: 0
+  - source: Occupational Safety and Health Administration (OSHA)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=NFPA-Hazard-Classification
+- **NFPA 704 Health**: 3
+  - source: Occupational Safety and Health Administration (OSHA)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=NFPA-Hazard-Classification
+- **NFPA 704 Reactivity**: 3
+  - source: Occupational Safety and Health Administration (OSHA)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=NFPA-Hazard-Classification
+- **NFPA 704 Special**: OX
+  - source: Occupational Safety and Health Administration (OSHA)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=NFPA-Hazard-Classification
+- **Exposure: eyes**: Redness. Pain. Blurred vision. Corneal damage. Burns.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Signs-and-Symptoms
+- **Exposure: skin**: MAY BE ABSORBED! Skin discoloration. Swelling. Redness. Pain. Skin burns.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Signs-and-Symptoms
+- **Exposure: inhalation**: Sore throat. Cough. Dizziness. Headache. Nausea. Shortness of breath.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Signs-and-Symptoms
+- **Exposure: ingestion**: Aspiration hazard! Sore throat. Abdominal pain. Abdominal distension. Shock or collapse.
+  - source: ILO-WHO International Chemical Safety Cards (ICSCs)
+  - url: https://pubchem.ncbi.nlm.nih.gov/compound/784#section=Signs-and-Symptoms
+- _NIOSH cross-check only (not on the card; not split by route)_ — https://www.cdc.gov/niosh/npg/npgd0335.html, last reviewed October 30, 2019
+  - routes: inhalation, ingestion, skin and/or eye contact
+  - symptoms: irritation eyes, nose, throat; corneal ulcer; erythema (skin redness), vesiculation skin; bleaching hair
