@@ -2,7 +2,7 @@
 
 SafeMix is a browser-only web app (Vite + React + TypeScript + Tailwind, hosted on GitHub Pages) for lab preparation. A user searches a chemical by name or CAS and gets one compact card with exactly the columns of the lab's chemical table (name, formula, MW, BP, MP, density, vapour pressure, waste container, NFPA 704, exposure hazards by route), each value cited from an approved source. Cards go into a library and experiment tables, can be exported, and later are cross-checked in a compatibility matrix. **The card holds only those columns; the 16-section SDS format is out of scope (SPEC.md v2).** First target user: an academic chemistry / chemical-engineering teaching lab.
 
-**The full spec is in [SPEC.md](SPEC.md). Read it before starting any work.**
+**Read [PROGRESS.md](PROGRESS.md) first: it says what is done and what is waiting. The full spec is in [SPEC.md](SPEC.md). Read it before starting any work.**
 
 ## Core principle: grounded AI only (NON-NEGOTIABLE)
 

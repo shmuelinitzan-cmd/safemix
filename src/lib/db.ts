@@ -1,14 +1,18 @@
 // Browser storage (IndexedDB via Dexie). Cards stay on this computer; no server.
 import Dexie, { type Table } from 'dexie'
 import type { ChemicalCard } from '../types/card.ts'
+import type { Experiment } from '../types/experiment.ts'
 import demoCards from '../data/demo-cards.json'
 
 class SafeMixDB extends Dexie {
   cards!: Table<ChemicalCard, string>
   meta!: Table<{ key: string; value: string }, string>
+  experiments!: Table<Experiment, string>
   constructor(name = 'safemix') {
     super(name)
     this.version(1).stores({ cards: 'id', meta: 'key' })
+    // v2 adds saved experiments; existing cards are kept.
+    this.version(2).stores({ cards: 'id', meta: 'key', experiments: 'id' })
   }
 }
 
