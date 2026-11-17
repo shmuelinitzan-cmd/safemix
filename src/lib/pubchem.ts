@@ -126,6 +126,49 @@ function nfpa(record: Json, cid: number, name: string, date: string, digit: bool
     }
 }
 
+// ---- GHS hazard statements (fallback for the exposure columns) ----------------------
+// Used ONLY for a route that has no ICSC "Signs and Symptoms" entry. Rule (fixed, documented):
+//  1. Take the first "GHS Hazard Statements" entry whose reference is the European Chemicals
+//     Agency (ECHA): the summary of the C&L notifications. If there is none, the first entry.
+//  2. Keep the statements that at least half of the notifiers reported (the "(99.8%)" in the
+//     text), or that carry no percentage. A code only a minority reported is dropped.
+//  3. Sort each kept statement to a route by its H-code (table below). Codes for other effects
+//     (e.g. aquatic toxicity, flammability) are not exposure routes and are not shown here.
+//  The statement text is copied word for word, without the percentage and the bracketed class.
+export const GHS_ROUTES: Record<'exp_eyes' | 'exp_skin' | 'exp_inhalation' | 'exp_ingestion', string[]> = {
+  exp_eyes: ['H314', 'H318', 'H319', 'H320'],
+  exp_skin: ['H310', 'H311', 'H312', 'H314', 'H315', 'H316', 'H317'],
+  exp_inhalation: ['H330', 'H331', 'H332', 'H334', 'H335', 'H336'],
+  exp_ingestion: ['H300', 'H301', 'H302', 'H303', 'H304', 'H305'],
+}
+const GHS_MIN_SHARE = 50
+
+export function ghsStatements(record: Json): { info: Json; statements: { code: string; text: string }[] } | undefined {
+  const infos: Json[] = (findSection(record.Section, 'GHS Classification')?.Information ?? []).filter((i: Json) => i.Name === 'GHS Hazard Statements')
+  if (!infos.length) return
+  const isEcha = (i: Json) => record.Reference?.find((r: Json) => r.ReferenceNumber === i.ReferenceNumber)?.SourceName === 'European Chemicals Agency (ECHA)'
+  const info = infos.find(isEcha) ?? infos[0]
+  const statements: { code: string; text: string }[] = []
+  for (const line of info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []) {
+    const m = /^(H\d{3})(?:\s*\((>\s*)?(\d+(?:\.\d+)?)%\))?:\s*([^[]+?)\s*(?:\[|$)/.exec(line)
+    if (!m) continue
+    if (m[3] !== undefined && Number(m[3]) < GHS_MIN_SHARE) continue
+    statements.push({ code: m[1], text: `${m[1]}: ${m[4].trim()}` })
+  }
+  return { info, statements }
+}
+
+function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date: string): Field | undefined {
+  const g = ghsStatements(record)
+  if (!g) return
+  const hits = g.statements.filter((s) => GHS_ROUTES[key].includes(s.code))
+  if (!hits.length) return
+  const f = makeField(record, cid, 'GHS Classification', g.info, [...new Set(hits.map((h) => h.text))].join('; '), date)
+  f.condition = undefined
+  f.note = 'GHS hazard statements (no ICSC symptoms for this route in PubChem).'
+  return f
+}
+
 export interface PubChemResult {
   cid: number
   title: string
@@ -152,10 +195,10 @@ export function parseRecord(record: Json, date: string): PubChemResult {
     nfpa_health: nfpa(record, cid, 'NFPA Health Rating', date, true),
     nfpa_reactivity: nfpa(record, cid, 'NFPA Instability Rating', date, true),
     nfpa_special: nfpa(record, cid, 'NFPA Specific Notice', date, false),
-    exp_eyes: symptoms(record, cid, 'Eye Exposure', date),
-    exp_skin: symptoms(record, cid, 'Skin Exposure', date),
-    exp_inhalation: symptoms(record, cid, 'Inhalation Exposure', date),
-    exp_ingestion: symptoms(record, cid, 'Ingestion Exposure', date),
+    exp_eyes: symptoms(record, cid, 'Eye Exposure', date) ?? ghsRoute(record, cid, 'exp_eyes', date),
+    exp_skin: symptoms(record, cid, 'Skin Exposure', date) ?? ghsRoute(record, cid, 'exp_skin', date),
+    exp_inhalation: symptoms(record, cid, 'Inhalation Exposure', date) ?? ghsRoute(record, cid, 'exp_inhalation', date),
+    exp_ingestion: symptoms(record, cid, 'Ingestion Exposure', date) ?? ghsRoute(record, cid, 'exp_ingestion', date),
   }
 
   // Waste container: rule-based suggestion from the formula, never from PubChem text.

@@ -31,52 +31,93 @@ export function convertPressure(value: string): string | undefined {
   return `${m[1] ?? ''}${Number(mm.toPrecision(3))} mmHg`
 }
 
-// ---- Vapour pressure for the card ------------------------------------------------
-// The source text can hold several values ("180 mmHg at 68 °F ; 270 mmHg at 86 °F (NTP, 1992)").
-// The card shows only the FIRST value with its temperature, and a labelled conversion of the
-// temperature (°F -> °C) and, if needed, of the pressure (-> mmHg). The stored text is not changed.
+// ---- Tidy source text for the card ---------------------------------------------
+// PubChem copies its sources' wording, so values carry notes like "(USCG, 1999)",
+// " - Denser than water; will sink", "@25 °C" or "[mm Hg]". For display only, these are
+// trimmed to the value itself. The stored text is not changed and is shown in full in the
+// source details and on the PDF sources page.
 const CITATION_AT_END = /\s*\([A-Za-z.&/ ]+,\s*\d{4}\)\s*$/ // "(NTP, 1992)", "(NIOSH, 2024)"
+export function tidy(value: string): string {
+  return value
+    .replace(/\s+-\s+(?:Denser|Less dense) than water.*$/i, '')
+    .replace(CITATION_AT_END, '')
+    .replace(/^(?:boiling point|melting point|vapou?r pressure|density)\s*:\s*/i, '')
+    .replace(/\[\s*mm\s*Hg\s*\]|\bmm Hg\b/gi, 'mmHg')
+    .replace(/\s*@\s*/g, ' at ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+const AT_F = /(\bat\s+)(-?\d+(?:\.\d+)?)\s*°\s?F\b/i
+const AT_TEMP_C = (s: string): number | undefined => {
+  const m = /\bat\s+(-?\d+(?:\.\d+)?)\s*°\s?([CF])\b/i.exec(s)
+  if (!m) return undefined
+  const n = Number(m[1])
+  return m[2].toUpperCase() === 'F' ? ((n - 32) * 5) / 9 : n
+}
 
 export interface CardValue {
-  shown: string // the value as the source gave it (first value only, citation removed)
+  shown: string // the value as the source gave it (one value, tidied)
   converted?: string // the same value in the card's units, when the source used other units
   from?: string // the part of `shown` that was converted, e.g. "68 °F" or "24 kPa"
 }
 
+// ---- Vapour pressure for the card ------------------------------------------------
+// The source text can hold several values ("40 mmHg at 41 °F ; 80.1 mmHg at 68 °F (NTP, 1992)").
+// The card shows ONE value: the one measured closest to room temperature (20 °C); if none
+// states a temperature, the first. Then a labelled conversion of the temperature (°F -> °C)
+// and, if needed, of the pressure (-> mmHg). The stored text is not changed.
+const ROOM_C = 20
 export function vapourPressureForCard(value: string): CardValue {
-  const first = value.split(/\s*;\s*/)[0].replace(CITATION_AT_END, '').trim()
+  const parts = value.split(/\s*;\s*/).map(tidy).filter(Boolean)
+  const withTemp = parts.map((p) => ({ p, t: AT_TEMP_C(p) })).filter((x) => x.t !== undefined)
+  const first = withTemp.length
+    ? withTemp.reduce((a, b) => (Math.abs(b.t! - ROOM_C) < Math.abs(a.t! - ROOM_C) ? b : a)).p
+    : parts[0] ?? value
+  // ICSC style: "Vapour pressure, kPa at 20 °C: 2 - 2.5" -> one value or range, in mmHg.
+  const icsc = /^vapou?r pressure,\s*(kPa|Pa)\s+at\s+(-?\d+(?:\.\d+)?\s*°\s?C)\s*:\s*(\d+(?:\.\d+)?)(?:\s*-\s*(\d+(?:\.\d+)?))?\s*$/i.exec(first)
+  if (icsc) {
+    const k = TO_MMHG[icsc[1].toLowerCase()]
+    const mm = (n: string) => Number((Number(n) * k).toPrecision(3))
+    const range = icsc[4] ? `${mm(icsc[3])} - ${mm(icsc[4])}` : `${mm(icsc[3])}`
+    const orig = icsc[4] ? `${icsc[3]} - ${icsc[4]} ${icsc[1]}` : `${icsc[3]} ${icsc[1]}`
+    return { shown: `${orig} at ${icsc[2]}`, converted: `${range} mmHg at ${icsc[2]}`, from: orig }
+  }
   let conv = first
-  const parts: string[] = []
+  const from: string[] = []
   // groups: 1 = leading space + qualifier, 2 = the qualifier alone (from QUAL), 3 = number, 4 = unit
   const lead = new RegExp(`^(\\s*${QUAL})${NUM}\\s*(mmHg|kPa|Pa|bar|atm|torr)\\b`, 'i').exec(first)
   if (lead && lead[4].toLowerCase() !== 'mmhg') {
     const mm = Number(lead[3]) * TO_MMHG[lead[4].toLowerCase()]
     conv = `${lead[1]}${Number(mm.toPrecision(3))} mmHg${first.slice(lead[0].length)}`
-    parts.push(lead[0].trim())
+    from.push(lead[0].trim())
   }
-  const temp = /(\bat\s+)(-?\d+(?:\.\d+)?)\s*°\s?F\b/i.exec(conv)
+  const temp = AT_F.exec(conv)
   if (temp) {
     conv = conv.replace(temp[0], `${temp[1]}${round1(((Number(temp[2]) - 32) * 5) / 9)} °C`)
-    parts.push(`${temp[2]} °F`)
+    from.push(`${temp[2]} °F`)
   }
   if (conv === first) return { shown: first }
   // Both converted: name the whole original; one converted: name just that part.
-  return { shown: first, converted: conv, from: parts.length === 2 ? first : parts[0] }
+  return { shown: first, converted: conv, from: from.length === 2 ? first : from[0] }
 }
 
 // BP / MP: the leading temperature converted to °C, keeping the rest ("at 760 mmHg").
 export function temperatureForCard(value: string): CardValue {
-  const m = new RegExp(`^\\s*${QUAL}${NUM}\\s*(°\\s?F|°\\s?C|K)\\b`, 'i').exec(value)
-  const c = convertTemperature(value)
-  if (!m || !c) return { shown: value }
-  return { shown: value, converted: c + value.slice(m[0].length), from: `${m[2]} ${m[3].replace(/\s/g, '')}` }
+  const v = tidy(value)
+  const m = new RegExp(`^\\s*${QUAL}${NUM}\\s*(°\\s?F|°\\s?C|K)\\b`, 'i').exec(v)
+  const c = convertTemperature(v)
+  if (!m || !c) return { shown: v }
+  return { shown: v, converted: c + v.slice(m[0].length), from: `${m[2]} ${m[3].replace(/\s/g, '')}` }
 }
 
 // Density: 1 cm³ = 1 mL exactly, so the source's "g/cu cm" or "g/cm³" is shown as g/mL
-// (the card's unit). Only the unit's spelling changes; the number is untouched.
+// (the card's unit). Only the unit's spelling changes; the number is untouched. A measuring
+// temperature in °F ("at 68 °F") gets the same labelled °C conversion as elsewhere.
 const G_PER_CC = /g\s*\/\s*(?:cu\.?\s*cm|cm\s*3|cm³|cc)(?![a-z])/i
 export function densityForCard(value: string): CardValue {
-  if (!G_PER_CC.test(value)) return { shown: value }
-  const out = value.replace(G_PER_CC, 'g/mL').replace(/g\/mL\s+(-?\d+(?:\.\d+)?\s*°\s?C)/, 'g/mL at $1')
-  return { shown: out }
+  const shown = tidy(value).replace(G_PER_CC, 'g/mL').replace(/g\/mL\s+(-?\d+(?:\.\d+)?\s*°\s?C)/, 'g/mL at $1')
+  const temp = AT_F.exec(shown)
+  if (!temp) return { shown }
+  return { shown, converted: shown.replace(temp[0], `${temp[1]}${round1(((Number(temp[2]) - 32) * 5) / 9)} °C`), from: `${temp[2]} °F` }
 }

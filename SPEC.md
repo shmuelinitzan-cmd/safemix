@@ -1,6 +1,6 @@
 # SafeMix – Product Spec
 
-Nov 10, 2026 · Nitzan Shmueli · v2 (lab-table card)
+Nov 10, 2026 · Nitzan Shmueli · v2 (lab-table card) · Nov 17: GHS added as an exposure source
 
 ## Overview
 
@@ -31,6 +31,7 @@ PubChem is the live source for every field of the card; NIOSH and CAMEO add deta
 | Source | Fields it fills | How the app gets it | Phase |
 | --- | --- | --- | --- |
 | PubChem (NIH) | Name, formula, MW, BP, MP, density, vapour pressure, NFPA rating, exposure symptoms by route (via ICSC/HSDB data inside PubChem) | Live, free REST API (PUG REST / PUG View), lookup by name or CAS | 1 |
+| GHS hazard statements (ECHA C&L summary, via PubChem) | Exposure hazards by route, only where PubChem has no ICSC symptoms for that route. Statements reported by at least half of the notifiers, sorted to a route by H-code (see `src/lib/pubchem.ts`) | Live, same PubChem record | 1 |
 | NIOSH Pocket Guide | Exposure symptoms by route (eyes, skin, inhalation, ingestion) where PubChem has none | Static JSON for demo chemicals, prepared from the official pages | 1 |
 | CAMEO Chemicals (NOAA) | Reactive groups for the compatibility matrix | Static JSON for demo chemicals | 2 |
 | CRC Handbook | Manual cross-check of demo values only | Not ingested, not redistributed | — |

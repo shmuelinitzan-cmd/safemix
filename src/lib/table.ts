@@ -65,12 +65,13 @@ export function cellsFor(card: ChemicalCard): Record<string, string> {
   const g = (k: FieldKey) => f[k]
   const vp = f.vapor_pressure && vapourPressureForCard(f.vapor_pressure.value)
   const waste = f.waste_container
+  const rel = f.density?.quantity === 'relative_density' ? 'relative density ' : ''
   return {
     name: plain(g('name'), undefined, false),
     formula: plain(g('formula')),
     mw: plain(g('mw')),
     bpmp: `BP: ${temperature(g('bp'))}\nMP: ${temperature(g('mp'))}`,
-    density: f.density ? plain(f.density, (f.density.quantity === 'relative_density' ? 'relative density ' : '') + densityForCard(f.density.value).shown) : EMPTY_CELL,
+    density: f.density ? withConverted(f.density, ((v) => ({ ...v, shown: rel + v.shown, converted: v.converted && rel + v.converted }))(densityForCard(f.density.value))) : EMPTY_CELL,
     vp: f.vapor_pressure && vp ? withConverted(f.vapor_pressure, vp) : EMPTY_CELL,
     waste: waste ? plain(waste) + (waste.status === 'pending' && waste.origin === 'rule' ? ' †' : '') : EMPTY_CELL,
     fire: plain(g('nfpa_fire')),
