@@ -47,7 +47,7 @@ export const FOOTNOTES = [
 // and the change is still listed on the sources page.
 function plain(f: Field | undefined, text = f?.value, markEdited = true): string {
   if (!f || !text) return EMPTY_CELL
-  return text + (f.condition ? ` [applies to: ${f.condition}]` : '') + (markEdited && f.origin === 'user' ? ' (edited)' : '')
+  return text + (f.condition && !text.includes(f.condition) ? ` [applies to: ${f.condition}]` : '') + (markEdited && f.origin === 'user' ? ' (edited)' : '')
 }
 
 // Converted values lead, in the table's units, followed by what the source said.
