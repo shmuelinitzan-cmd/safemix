@@ -86,7 +86,7 @@ describe('library screen', () => {
     const html = renderToStaticMarkup(<Library cards={cards} {...libProps} />)
     expect(html).toMatch(/<button[^>]*>New experiment<\/button>/)
     expect(html).not.toMatch(/<button[^>]*disabled[^>]*>New experiment/)
-    expect(html).toMatch(/<button disabled=""[^>]*>Compatibility check<\/button>/)
+    expect(html).toMatch(/<button disabled=""[^>]*>Compatibility check: coming soon<\/button>/)
   })
   it('lists saved experiments', () => {
     const e: Experiment = { id: 'exp-1', name: 'Titration lab', card_ids: ['a', 'b'], created_at: '2026-11-11', updated_at: '2026-11-11' }

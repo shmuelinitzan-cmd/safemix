@@ -73,7 +73,7 @@ export default function Library(p: Props) {
         <button onClick={() => fileRef.current?.click()} className={btn}>Import</button>
         <input ref={fileRef} type="file" accept=".json,application/json" onChange={chooseFile} className="hidden" aria-label="Choose a SafeMix library file" />
         <button onClick={p.onExportAll} disabled={!cards?.length} className={`${btn} disabled:opacity-40`}>Export all</button>
-        <button disabled title="Coming in a later phase" className="rounded border border-slate-300 bg-white px-4 py-2 opacity-50">Compatibility check</button>
+        <button disabled title="Coming in a later phase" className="rounded border border-slate-300 bg-white px-4 py-2 opacity-50">Compatibility check: coming soon</button>
       </div>
 
       {plan && (
