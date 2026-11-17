@@ -18,8 +18,15 @@ export function cardFromLookup(r: PubChemResult): ChemicalCard {
   }
 }
 
+// Where a hand-entered value comes from. Without one it is "Entered by hand".
+export interface SdsCitation {
+  citation: string // e.g. "Sigma-Aldrich SDS 438073, rev. 2024-03-12"
+  url?: string // https link to that SDS, when there is one
+}
+
 // A person edits a value. It becomes origin "user"; what the source said is kept.
-export function editField(card: ChemicalCard, key: FieldKey, value: string, note?: string): ChemicalCard {
+// With an SDS citation the value is recorded as coming from the supplier SDS.
+export function editField(card: ChemicalCard, key: FieldKey, value: string, note?: string, sds?: SdsCitation): ChemicalCard {
   const old = card.fields[key]
   const trimmed = value.trim()
   const fields = { ...card.fields }
@@ -32,17 +39,45 @@ export function editField(card: ChemicalCard, key: FieldKey, value: string, note
       unit: undefined,
       quantity: undefined,
       condition: undefined,
-      source: 'user',
+      source: sds ? 'sds' : 'user',
       origin: 'user',
       status: 'pending',
       retrieved_at: today(),
-      note: note ?? 'Edited by hand.',
+      source_url: sds?.url && /^https:\/\/\S+$/.test(sds.url.trim()) ? sds.url.trim() : '',
+      note: note ?? (sds ? 'Typed in from the supplier SDS.' : 'Edited by hand.'),
       source_value: old && old.origin !== 'user' ? old.value : old?.source_value,
-      upstream: undefined, // the old source no longer backs this value
+      upstream: sds ? sds.citation.trim() : undefined, // the old source no longer backs this value
       upstream_citation: undefined,
     }
   }
   return { ...card, fields, updated_at: today() }
+}
+
+// A solution card made from a pure-compound card ("Nitric Acid" -> "Nitric Acid, 5%").
+// Only the identity of the solute is carried over (formula, MW) plus the waste-container
+// suggestion, which depends on the solute. BP, MP, density, vapour pressure, NFPA and
+// exposure hazards of the PURE compound do not apply to the solution, so they are left
+// empty, to be typed in from the supplier SDS of the solution.
+const CARRY_TO_SOLUTION: FieldKey[] = ['formula', 'mw', 'waste_container']
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+export function makeSolutionCard(pure: ChemicalCard, concentration: string): ChemicalCard {
+  const conc = concentration.trim()
+  if (!conc) throw new Error('Concentration is empty.')
+  const now = today()
+  const pureName = pure.fields.name?.value ?? 'Unnamed chemical'
+  const fields: ChemicalCard['fields'] = {}
+  for (const k of CARRY_TO_SOLUTION) if (pure.fields[k]) fields[k] = { ...pure.fields[k]!, status: 'pending' }
+  if (fields.mw) fields.mw = { ...fields.mw, note: 'MW of the dissolved compound.' }
+  fields.name = {
+    value: `${pureName}, ${conc}`, source: 'user', origin: 'user', status: 'pending', retrieved_at: now,
+    source_url: '', note: `Solution card made from "${pureName}".`,
+  }
+  return {
+    id: `${pure.id}-sol-${slugify(conc) || 'solution'}`,
+    cas: pure.cas, pubchem_cid: pure.pubchem_cid, structure: pure.structure && { ...pure.structure, status: 'pending' },
+    concentration: conc, parent_id: pure.id, created_at: now, updated_at: now, fields,
+  }
 }
 
 // "Approve and save": the person accepts every value that is on the card.

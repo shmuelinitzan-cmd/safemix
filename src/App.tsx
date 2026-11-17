@@ -80,7 +80,11 @@ export default function App() {
           <CardScreen key={view.card.id} card={view.card} saved={view.saved}
             onSave={async (c) => { await db.cards.put(c); setView({ type: 'card', card: c, saved: true }) }}
             onDelete={(id) => db.cards.delete(id)}
-            onBack={() => setView({ type: 'library' })} />
+            onBack={() => setView({ type: 'library' })}
+            onOpenDraft={(c) => {
+              const existing = cards?.find((x) => x.id === c.id)
+              setView(existing ? { type: 'card', card: existing, saved: true } : { type: 'card', card: c, saved: false })
+            }} />
         )}
         {view.type === 'experiment' && (
           <ExperimentScreen key={view.experiment.id} experiment={view.experiment} saved={view.saved} library={cards ?? []}

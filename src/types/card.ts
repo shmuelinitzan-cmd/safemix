@@ -1,7 +1,9 @@
 // SafeMix data model (SPEC.md v2): one compact card with exactly the columns of the
 // lab's chemical table. Every value carries its provenance. Nothing else is on the card.
 
-export type SourceId = 'pubchem' | 'niosh' | 'cameo' | 'user' | 'app'
+// 'sds' = typed in by a person from the supplier's safety data sheet; the citation
+// (supplier, product, revision date) is kept in `upstream`.
+export type SourceId = 'pubchem' | 'niosh' | 'cameo' | 'user' | 'app' | 'sds'
 export type Origin = 'source' | 'user' | 'rule'
 export type Status = 'pending' | 'approved'
 
@@ -74,6 +76,10 @@ export interface ChemicalCard {
   updated_at: string
   // A key that is absent has no data: the UI shows "No data from approved sources".
   fields: Partial<Record<FieldKey, Field>>
+  // Solution cards: the concentration as the lab writes it (e.g. "5% w/w aqueous"), and the
+  // pure-compound card it was made from. Values of the pure compound are never copied over.
+  concentration?: string
+  parent_id?: string
 }
 
 export const NO_DATA_LABEL = 'No data from approved sources'

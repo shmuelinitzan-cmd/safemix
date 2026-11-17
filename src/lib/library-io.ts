@@ -24,7 +24,7 @@ export function exportLibrary(cards: ChemicalCard[], experiments: Experiment[], 
 
 export class ImportError extends Error {}
 
-const SOURCES = ['pubchem', 'niosh', 'cameo', 'user', 'app']
+const SOURCES = ['pubchem', 'niosh', 'cameo', 'user', 'app', 'sds']
 const ORIGINS = ['source', 'user', 'rule']
 const STATUSES = ['pending', 'approved']
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
@@ -94,6 +94,8 @@ export function validateCard(x: unknown, index: number): ChemicalCard {
     card.pubchem_cid = x.pubchem_cid
   }
   if (x.structure !== undefined) card.structure = structure(x.structure, `${what} picture`)
+  if (x.concentration !== undefined) card.concentration = str(x.concentration, `${what} concentration`, 200)
+  if (x.parent_id !== undefined) card.parent_id = str(x.parent_id, `${what} parent id`, 200)
   return card
 }
 

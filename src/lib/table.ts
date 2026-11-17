@@ -39,6 +39,7 @@ export const FOOTNOTES = [
   `${EMPTY_CELL} = No data from approved sources.`,
   '† = Rule-based suggestion, confirm with lab instructions.',
   'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
+  '(SDS) = typed in from the supplier SDS; the SDS is named on the sources page.',
   '(edited) = value changed by hand; see the sources page.',
 ]
 
@@ -47,7 +48,8 @@ export const FOOTNOTES = [
 // and the change is still listed on the sources page.
 function plain(f: Field | undefined, text = f?.value, markEdited = true): string {
   if (!f || !text) return EMPTY_CELL
-  return text + (f.condition && !text.includes(f.condition) ? ` [applies to: ${f.condition}]` : '') + (markEdited && f.origin === 'user' ? ' (edited)' : '')
+  const mark = !markEdited || f.origin !== 'user' ? '' : f.source === 'sds' ? ' (SDS)' : ' (edited)'
+  return text + (f.condition && !text.includes(f.condition) ? ` [applies to: ${f.condition}]` : '') + mark
 }
 
 // Converted values lead, in the table's units, followed by what the source said.
@@ -110,7 +112,7 @@ export interface SourceRow {
   url: string
 }
 
-const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'Entered by hand', app: 'Rule in SafeMix' }
+const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'Entered by hand', app: 'Rule in SafeMix', sds: 'Supplier SDS' }
 const FIELD_ORDER: FieldKey[] = ['name', 'formula', 'mw', 'bp', 'mp', 'density', 'vapor_pressure', 'waste_container',
   'nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special', 'exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion']
 
@@ -122,7 +124,8 @@ export function sourceRows(cards: ChemicalCard[]): SourceRow[] {
       const f = card.fields[k]
       if (!f) continue
       const short = shortSource(f.upstream)
-      const via = f.upstream && f.upstream !== 'PubChem' && f.upstream !== 'PubChem record title'
+      const via = f.source === 'sds' ? `: ${f.upstream ?? 'not named'}`
+        : f.upstream && f.upstream !== 'PubChem' && f.upstream !== 'PubChem record title'
         ? ` via ${short === f.upstream ? f.upstream : `${short} (${f.upstream})`}` : ''
       const detail = [
         f.upstream_citation,
