@@ -1,5 +1,5 @@
 import type { ChemicalCard } from '../types/card.ts'
-import { COLUMNS, cellsFor, FOOTNOTES } from '../lib/table.ts'
+import { COLUMNS, cellsFor, FOOTNOTES, ghsInsteadOfNfpa, NFPA_IDS } from '../lib/table.ts'
 
 interface Props {
   cards: ChemicalCard[]
@@ -40,6 +40,7 @@ export default function ExperimentTable({ cards, onMove, onRemove }: Props) {
           <tbody>
             {cards.map((card, i) => {
               const cells = cellsFor(card)
+              const ghs = ghsInsteadOfNfpa(card)
               return (
                 <tr key={card.id} className="align-top">
                   {edit && (
@@ -49,11 +50,17 @@ export default function ExperimentTable({ cards, onMove, onRemove }: Props) {
                       <button aria-label={`Remove ${card.fields.name?.value} from this table`} onClick={() => onRemove?.(i)} className="px-1 text-red-700">×</button>
                     </td>
                   )}
-                  {COLUMNS.map((c) => (
-                    <td key={c.id} className={`whitespace-pre-line border border-slate-300 px-2 py-1 ${MIN_WIDTH[c.id] ?? ''} ${c.group === 'NFPA 704' ? 'text-center font-bold' : ''}`}>
-                      {cells[c.id]}
-                    </td>
-                  ))}
+                  {COLUMNS.map((c) => {
+                    if (ghs && NFPA_IDS.includes(c.id)) {
+                      if (c.id !== 'fire') return null
+                      return <td key="ghs" colSpan={NFPA_IDS.length} className="border border-slate-300 bg-orange-50 px-2 py-1 text-[11px] text-orange-950">{ghs}</td>
+                    }
+                    return (
+                      <td key={c.id} className={`whitespace-pre-line border border-slate-300 px-2 py-1 ${MIN_WIDTH[c.id] ?? ''} ${c.group === 'NFPA 704' ? 'text-center font-bold' : ''}`}>
+                        {cells[c.id]}
+                      </td>
+                    )
+                  })}
                 </tr>
               )
             })}

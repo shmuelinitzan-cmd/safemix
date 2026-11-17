@@ -27,11 +27,13 @@ Last updated: 2026-11-17
   - "Make solution card" on a card: e.g. "Nitric Acid, 5% aqueous". Carries only formula, MW (of the solute) and the waste suggestion; pure-compound BP/MP/density/VP/NFPA/exposure are NOT copied. Concentration survives JSON export/import.
   - 140 tests, type check, lint and build pass.
 
+- **GHS instead of NFPA (2026-11-17, not committed yet).** New card field "GHS hazards": the GHS statements at least half of the notifiers reported (ECHA via PubChem), with the strongest signal word among them. When a card has NO NFPA rating, the table, PDF and CSV show one merged GHS cell in place of the four NFPA columns (orange). Never converted to NFPA numbers. Decision: supplier SDS is optional, not required; SafeMix shows what approved sources have and says plainly what is missing. 144 tests pass.
+
 ## Next steps (in order) — stopped here on 2026-11-17
 1. **Commit and push** the SDS/solution-card work (not pushed yet):
    `cd ~/Desktop/SafeMix && git add -A && git commit -m "Supplier SDS citations on hand-entered values; solution cards" && git push`
    (git identity is now set to Nitzan Shmueli / shmuelinitzan@gmail.com.)
-2. **Fill Lab 1 from real supplier SDSs** (Nitzan gets the PDFs; Claude can read them and fill values with exact citations):
+2. *(Optional, not required)* **Fill Lab 1 gaps from supplier SDSs** if a 100% full table is wanted:
    - NFPA missing: KI, NaOCl, AgNO3, Cu, iodoform, 2-chlorobutane, tert-butyl chloride.
    - Exposure missing: KI, 2-chlorobutane, tert-butyl chloride. MP missing: 2-chlorobutane, tert-butyl chloride. VP missing: AgNO3.
    - Solution cards needed: NaOCl 5%, AgNO3 2% in ethanol, HNO3 5%.

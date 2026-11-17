@@ -44,6 +44,8 @@ export const FIELD_KEYS = [
   'bp', 'mp', 'density', 'vapor_pressure',
   'waste_container',
   'nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special',
+  // GHS hazard statements; shown in the NFPA columns only when there is no NFPA rating.
+  'ghs',
   'exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion',
 ] as const
 export type FieldKey = (typeof FIELD_KEYS)[number]
@@ -55,6 +57,7 @@ export const FIELD_LABELS: Record<FieldKey, string> = {
   waste_container: 'Waste container',
   nfpa_fire: 'NFPA 704 Fire', nfpa_health: 'NFPA 704 Health',
   nfpa_reactivity: 'NFPA 704 Reactivity', nfpa_special: 'NFPA 704 Special',
+  ghs: 'GHS hazards',
   exp_eyes: 'Exposure: eyes', exp_skin: 'Exposure: skin',
   exp_inhalation: 'Exposure: inhalation', exp_ingestion: 'Exposure: ingestion',
 }

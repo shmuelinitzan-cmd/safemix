@@ -39,6 +39,7 @@ export const FOOTNOTES = [
   `${EMPTY_CELL} = No data from approved sources.`,
   '† = Rule-based suggestion, confirm with lab instructions.',
   'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
+  'GHS = no NFPA 704 rating in the approved sources; the GHS hazard statements are shown instead (not converted to NFPA numbers).',
   '(SDS) = typed in from the supplier SDS; the SDS is named on the sources page.',
   '(edited) = value changed by hand; see the sources page.',
 ]
@@ -61,6 +62,15 @@ function withConverted(f: Field | undefined, v: CardValue | undefined): string {
 function temperature(f: Field | undefined): string {
   return f ? withConverted(f, temperatureForCard(f.value)) : EMPTY_CELL
 }
+
+// When a card has no NFPA rating at all but has GHS statements, the four NFPA columns are
+// merged into one cell that shows the GHS statements. Returns that text, or undefined.
+export function ghsInsteadOfNfpa(card: ChemicalCard): string | undefined {
+  const f = card.fields
+  if (f.nfpa_fire || f.nfpa_health || f.nfpa_reactivity || f.nfpa_special || !f.ghs) return undefined
+  return `GHS ${plain(f.ghs)}`
+}
+export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 
 export function cellsFor(card: ChemicalCard): Record<string, string> {
   const f = card.fields
@@ -92,13 +102,14 @@ const csvCell = (s: string) => (/[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"
 
 // Empty cells stay empty in the CSV (not "–"), so a spreadsheet sees a real blank.
 export function toCsv(cards: ChemicalCard[]): string {
-  const header = COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label))
+  const header = [...COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label)), 'GHS hazards (when no NFPA rating)']
   const rows = cards.map((card) => {
     const cells = cellsFor(card)
-    return COLUMNS.map((c) => csvCell(cells[c.id] === EMPTY_CELL ? '' : cells[c.id].replace(/\n/g, '; ')))
+    const ghs = ghsInsteadOfNfpa(card)
+    return [...COLUMNS.map((c) => (cells[c.id] === EMPTY_CELL ? '' : cells[c.id].replace(/\n/g, '; '))), ghs ?? ''].map(csvCell)
   })
   // BOM so Excel reads the degree signs correctly.
-  return '﻿' + [header.map(csvCell), ...rows].map((r) => r.join(',')).join('\r\n') + '\r\n'
+  return '\ufeff' + [header.map(csvCell), ...rows].map((r) => r.join(',')).join('\r\n') + '\r\n'
 }
 
 // ---- Sources list (last pages of the PDF) -------------------------------------------
@@ -114,7 +125,7 @@ export interface SourceRow {
 
 const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'Entered by hand', app: 'Rule in SafeMix', sds: 'Supplier SDS' }
 const FIELD_ORDER: FieldKey[] = ['name', 'formula', 'mw', 'bp', 'mp', 'density', 'vapor_pressure', 'waste_container',
-  'nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special', 'exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion']
+  'nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special', 'ghs', 'exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion']
 
 export function sourceRows(cards: ChemicalCard[]): SourceRow[] {
   const out: SourceRow[] = []

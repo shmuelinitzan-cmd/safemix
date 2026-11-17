@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ghsStatements, parseRecord } from './pubchem.ts'
+import { cardFromLookup } from './cards.ts'
+import { cellsFor, ghsInsteadOfNfpa, toCsv } from './table.ts'
 import { densityForCard, temperatureForCard, tidy, vapourPressureForCard } from './units.ts'
 
 // A minimal PubChem record shaped like the real PUG View answer (strings copied from the
@@ -68,5 +70,31 @@ describe('display clean-up', () => {
   it('density: °F measuring temperature converted, number untouched', () => {
     expect(densityForCard('4.008 at 68 °F (NTP, 1992) - Denser than water; will sink'))
       .toEqual({ shown: '4.008 at 68 °F', converted: '4.008 at 20 °C', from: '68 °F' })
+  })
+})
+
+describe('GHS shown when there is no NFPA rating', () => {
+  const AGNO3 = [
+    'H272 (97.4%): May intensify fire; oxidizer [Danger Oxidizing liquids; Oxidizing solids]',
+    'H314 (99.9%): Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]',
+    'H360 (12%): May damage fertility or the unborn child [Danger Reproductive toxicity]',
+  ]
+  const r = parseRecord(record(AGNO3), '2026-11-17')
+  const card = cardFromLookup({ ...r, cid: 24470 })
+  it('stores the kept statements with the strongest signal word among them', () => {
+    expect(r.fields.ghs?.value).toBe('Danger: H272: May intensify fire; oxidizer · H314: Causes severe skin burns and eye damage')
+  })
+  it('signal word comes only from kept statements', () => {
+    const w = parseRecord(record(['H315 (90%): Causes skin irritation [Warning Skin corrosion/irritation]', 'H350 (5%): May cause cancer [Danger Carcinogenicity]']), '2026-11-17')
+    expect(w.fields.ghs?.value).toBe('Warning: H315: Causes skin irritation')
+  })
+  it('merges the NFPA columns into one GHS cell, never NFPA numbers', () => {
+    expect(ghsInsteadOfNfpa(card)).toMatch(/^GHS Danger: H272/)
+    expect(cellsFor(card).fire).toBe('–')
+    expect(toCsv([card]).split('\r\n')[1]).toContain('GHS Danger: H272')
+  })
+  it('a card WITH an NFPA rating keeps the NFPA columns', () => {
+    const withNfpa = { ...card, fields: { ...card.fields, nfpa_health: { ...card.fields.ghs!, value: '3' } } }
+    expect(ghsInsteadOfNfpa(withNfpa)).toBeUndefined()
   })
 })

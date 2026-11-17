@@ -8,7 +8,7 @@ import StructureImage from '../components/StructureImage.tsx'
 const BLOCKS: { title: string; keys: FieldKey[] }[] = [
   { title: 'Identity and properties', keys: ['name', 'formula', 'mw', 'bp', 'mp', 'density', 'vapor_pressure'] },
   { title: 'Waste container', keys: ['waste_container'] },
-  { title: 'NFPA 704', keys: ['nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special'] },
+  { title: 'NFPA 704', keys: ['nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special', 'ghs'] },
   { title: 'Exposure hazards by route', keys: ['exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion'] },
 ]
 

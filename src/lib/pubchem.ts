@@ -143,17 +143,18 @@ export const GHS_ROUTES: Record<'exp_eyes' | 'exp_skin' | 'exp_inhalation' | 'ex
 }
 const GHS_MIN_SHARE = 50
 
-export function ghsStatements(record: Json): { info: Json; statements: { code: string; text: string }[] } | undefined {
+export interface GhsStatement { code: string; text: string; signal?: 'Danger' | 'Warning' }
+export function ghsStatements(record: Json): { info: Json; statements: GhsStatement[] } | undefined {
   const infos: Json[] = (findSection(record.Section, 'GHS Classification')?.Information ?? []).filter((i: Json) => i.Name === 'GHS Hazard Statements')
   if (!infos.length) return
   const isEcha = (i: Json) => record.Reference?.find((r: Json) => r.ReferenceNumber === i.ReferenceNumber)?.SourceName === 'European Chemicals Agency (ECHA)'
   const info = infos.find(isEcha) ?? infos[0]
-  const statements: { code: string; text: string }[] = []
+  const statements: GhsStatement[] = []
   for (const line of info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []) {
-    const m = /^(H\d{3})(?:\s*\((>\s*)?(\d+(?:\.\d+)?)%\))?:\s*([^[]+?)\s*(?:\[|$)/.exec(line)
+    const m = /^(H\d{3})(?:\s*\((>\s*)?(\d+(?:\.\d+)?)%\))?:\s*([^[]+?)\s*(?:\[(Danger|Warning)?|$)/.exec(line)
     if (!m) continue
     if (m[3] !== undefined && Number(m[3]) < GHS_MIN_SHARE) continue
-    statements.push({ code: m[1], text: `${m[1]}: ${m[4].trim()}` })
+    statements.push({ code: m[1], text: `${m[1]}: ${m[4].trim()}`, signal: m[5] as GhsStatement['signal'] })
   }
   return { info, statements }
 }
@@ -166,6 +167,21 @@ function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date:
   const f = makeField(record, cid, 'GHS Classification', g.info, [...new Set(hits.map((h) => h.text))].join('; '), date)
   f.condition = undefined
   f.note = 'GHS hazard statements (no ICSC symptoms for this route in PubChem).'
+  return f
+}
+
+// All kept GHS statements in one value, for the NFPA columns when there is no NFPA rating.
+// The signal word is the strongest one among the KEPT statements ("Danger" over "Warning"),
+// not PubChem's overall "Signal" line, which also counts minority notifications.
+// GHS is never turned into NFPA numbers: the two systems rate hazards differently.
+function ghsSummary(record: Json, cid: number, date: string): Field | undefined {
+  const g = ghsStatements(record)
+  if (!g?.statements.length) return
+  const signal = g.statements.some((s) => s.signal === 'Danger') ? 'Danger' : g.statements.some((s) => s.signal === 'Warning') ? 'Warning' : undefined
+  const list = [...new Set(g.statements.map((s) => s.text))].join(' · ')
+  const f = makeField(record, cid, 'GHS Classification', g.info, signal ? `${signal}: ${list}` : list, date)
+  f.condition = undefined
+  f.note = 'GHS hazard statements reported by at least half of the notifiers.'
   return f
 }
 
@@ -195,6 +211,7 @@ export function parseRecord(record: Json, date: string): PubChemResult {
     nfpa_health: nfpa(record, cid, 'NFPA Health Rating', date, true),
     nfpa_reactivity: nfpa(record, cid, 'NFPA Instability Rating', date, true),
     nfpa_special: nfpa(record, cid, 'NFPA Specific Notice', date, false),
+    ghs: ghsSummary(record, cid, date),
     exp_eyes: symptoms(record, cid, 'Eye Exposure', date) ?? ghsRoute(record, cid, 'exp_eyes', date),
     exp_skin: symptoms(record, cid, 'Skin Exposure', date) ?? ghsRoute(record, cid, 'exp_skin', date),
     exp_inhalation: symptoms(record, cid, 'Inhalation Exposure', date) ?? ghsRoute(record, cid, 'exp_inhalation', date),

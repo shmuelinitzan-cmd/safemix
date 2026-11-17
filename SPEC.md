@@ -34,7 +34,8 @@ PubChem is the live source for every field of the card; NIOSH and CAMEO add deta
 | GHS hazard statements (ECHA C&L summary, via PubChem) | Exposure hazards by route, only where PubChem has no ICSC symptoms for that route. Statements reported by at least half of the notifiers, sorted to a route by H-code (see `src/lib/pubchem.ts`) | Live, same PubChem record | 1 |
 | NIOSH Pocket Guide | Exposure symptoms by route (eyes, skin, inhalation, ingestion) where PubChem has none | Static JSON for demo chemicals, prepared from the official pages | 1 |
 | CAMEO Chemicals (NOAA) | Reactive groups for the compatibility matrix | Static JSON for demo chemicals | 2 |
-| Supplier SDS (typed in by the user) | Any field the sources above leave empty, and every value of a solution card | Typed in on the card, with the SDS named (supplier, product no., revision date) and an optional link; marked "(SDS)" | 1b |
+| GHS hazard statements, summary (ECHA via PubChem) | Shown in place of the NFPA columns only when no NFPA rating exists. Never converted to NFPA numbers | Live, same PubChem record | 1 |
+| Supplier SDS (typed in by the user, optional) | Any field the sources above leave empty, and every value of a solution card | Typed in on the card, with the SDS named (supplier, product no., revision date) and an optional link; marked "(SDS)" | 1b |
 | CRC Handbook | Manual cross-check of demo values only | Not ingested, not redistributed | — |
 
 Every stored value keeps its source name, URL and retrieval date. Open question: confirm the terms of use of each source before the public release.

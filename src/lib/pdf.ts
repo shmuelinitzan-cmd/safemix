@@ -1,7 +1,7 @@
 // Experiment table -> print-ready PDF: A4 landscape, the lab form's columns, and the
 // sources for every value on the last pages. jsPDF is loaded only when the user exports.
 import type { ChemicalCard } from '../types/card.ts'
-import { COLUMNS, cellsFor, FOOTNOTES, sourceRows } from './table.ts'
+import { COLUMNS, cellsFor, FOOTNOTES, ghsInsteadOfNfpa, NFPA_IDS, sourceRows } from './table.ts'
 
 export const DISCLAIMER = 'Draft for educational use. Verify against the supplier SDS before use.'
 
@@ -38,7 +38,12 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
   ]
   const body = cards.map((card) => {
     const cells = cellsFor(card)
-    return COLUMNS.map((c) => pdfSafe(cells[c.id]))
+    const ghs = ghsInsteadOfNfpa(card)
+    if (!ghs) return COLUMNS.map((c) => pdfSafe(cells[c.id]))
+    // no NFPA rating: one merged cell with the GHS statements across the four NFPA columns
+    return COLUMNS.filter((c) => !NFPA_IDS.includes(c.id) || c.id === 'fire').map((c) => c.id === 'fire'
+      ? { content: pdfSafe(ghs), colSpan: NFPA_IDS.length, styles: { halign: 'left' as const, fontStyle: 'normal' as const, fontSize: 5.5, fillColor: [255, 247, 237] as [number, number, number] } }
+      : pdfSafe(cells[c.id]))
   })
   const widths: Record<string, number> = { name: 22, formula: 15, mw: 12, bpmp: 25, density: 20, vp: 25, waste: 17, fire: 10, health: 12, reactivity: 16, special: 12 }
 
