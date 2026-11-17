@@ -41,7 +41,8 @@ Last updated: 2026-11-17
 3. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). Open questions from that comparison, to check against the SDS: Fire 3 for KI and NaOCl in the hand table; tert-butyl chloride VP 17.25 (PubChem 302 mmHg); acetone VP 2.31 (PubChem 180 mmHg at 20 °C); n-butyl chloride Health 0 (PubChem 2); iodoform waste "organic" vs rule "halogenated organic".
 4. **Waste:** confirm with the lab where acetic acid and hydrogen peroxide go, and the iodoform case above.
 5. **Hydrogen peroxide demo card:** values look like concentrated peroxide; check which concentration the lab uses (probably a solution card).
-6. Then: README with screenshots + demo GIF, LinkedIn post (Phase 3). Compatibility matrix (Phase 2) is on hold ("coming soon" on the button).
+6. README with screenshots: done 2026-11-17 (images in docs/). Still to add: demo GIF.
+7. **Try SafeMix on more experiments** (Nitzan's choice, before any LinkedIn post). LinkedIn post waits until then. Compatibility matrix (Phase 2) on hold ("coming soon" on the button).
 
 ## Waiting for Nitzan
 1. Commit and push the pilot fixes.
