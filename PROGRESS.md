@@ -1,6 +1,6 @@
 # SafeMix – Progress
 
-Last updated: 2026-11-12
+Last updated: 2026-11-17
 
 ## Done
 - **Phase 0 – Setup.** Live at https://shmuelinitzan-cmd.github.io/safemix/
@@ -10,11 +10,13 @@ Last updated: 2026-11-12
   - Landscape PDF in the lab-form column order, with source pages. CSV export of a table.
   - JSON export/import of the whole library, with validation.
   - Intro on the library page ("Demo values verified against the CRC Handbook"), hideable.
-  - 122 tests, type check, lint and build pass.
+  - Tested in the browser on 2026-11-17: all five checks pass.
+  - Display fixes (2026-11-17, not committed yet): chemical name never shows "(edited)"; densities in g/cu cm or g/cm³ shown as g/mL (number unchanged); converted values lead, e.g. "180 mmHg at 20 °C (converted from 68 °F)", in the table, CSV, PDF and card.
+  - 124 tests, type check, lint and build pass.
 
 ## Waiting for Nitzan
-1. Test Phase 1b locally: `cd ~/Desktop/SafeMix`, `npm run dev`, open the printed address (usually http://localhost:5173). Try New experiment, Save, Export PDF/CSV, Export all, Import, Hide intro.
-2. Then tell Claude to push (repo: `shmuelinitzan-cmd/safemix`).
+1. Commit the display fixes and push Phase 1b (repo: `shmuelinitzan-cmd/safemix`).
+2. Hydrogen peroxide: the demo values (BP 150.2 °C, NFPA 3/3/OX) look like concentrated peroxide. Check against the lab's supplier SDS which concentration the lab uses.
 3. Lab waste categories: the exact names of the five categories, and which one acetic acid and hydrogen peroxide go in. Until then all waste containers stay pending (marked †).
 
 ## Next phase

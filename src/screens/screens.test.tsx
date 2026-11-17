@@ -15,7 +15,7 @@ describe('card screen', () => {
   const html = renderToStaticMarkup(<CardScreen card={acetone} saved onSave={noop} onDelete={noop} onBack={() => {}} />)
   it('shows the education banner', () => expect(html).toContain('Draft for educational use. Verify against the supplier SDS before use.'))
   it('shows the corrected acetone density and what PubChem had', () => {
-    expect(html).toContain('0.7902 g/cm³ at 20 °C')
+    expect(html).toContain('0.7902 g/mL at 20 °C')
     expect(html).toContain('PubChem had: 0.7845 g/cu cm at 20 °C')
     expect(html).toContain('Corrected after manual check against CRC Handbook 107th ed.')
   })
@@ -30,9 +30,8 @@ describe('card screen', () => {
     expect(h2).toContain('56.1 °C')
   })
   it('vapour pressure: first value only, temperature converted, full text only in the details', () => {
-    expect(html).toContain('180 mmHg at 68 °F')
-    expect(html).toContain('≈ 180 mmHg at 20 °C')
-    expect(html).toContain('<em>(converted)</em>')
+    expect(html).toContain('180 mmHg at 20 °C')
+    expect(html).toContain('<em>converted from 68 °F</em>')
     // the second value appears only inside a details block, as the "Original text" row
     const idx = html.indexOf('270 mmHg at 86')
     expect(idx).toBeGreaterThan(-1)

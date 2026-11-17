@@ -4,7 +4,7 @@
 // One function builds the cell text, and the screen, the CSV and the PDF all use it.
 import type { ChemicalCard, Field, FieldKey } from '../types/card.ts'
 import { FIELD_LABELS } from '../types/card.ts'
-import { convertTemperature, vapourPressureForCard } from './units.ts'
+import { densityForCard, temperatureForCard, vapourPressureForCard, type CardValue } from './units.ts'
 import { shortSource } from './sources.ts'
 
 export const EMPTY_CELL = '–' // = "No data from approved sources"
@@ -38,23 +38,26 @@ export const COLUMNS: Column[] = [
 export const FOOTNOTES = [
   `${EMPTY_CELL} = No data from approved sources.`,
   '† = Rule-based suggestion, confirm with lab instructions.',
-  '(converted) = converted from the unit the source gave; the original is on the sources page.',
+  'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
   '(edited) = value changed by hand; see the sources page.',
 ]
 
 // A value as shown in the table: condition and "(edited)" are added when they apply.
-function plain(f: Field | undefined, text = f?.value): string {
+// The chemical name never gets "(edited)": a renamed chemical is not changed safety data,
+// and the change is still listed on the sources page.
+function plain(f: Field | undefined, text = f?.value, markEdited = true): string {
   if (!f || !text) return EMPTY_CELL
-  return text + (f.condition ? ` [applies to: ${f.condition}]` : '') + (f.origin === 'user' ? ' (edited)' : '')
+  return text + (f.condition ? ` [applies to: ${f.condition}]` : '') + (markEdited && f.origin === 'user' ? ' (edited)' : '')
 }
 
-function withConverted(f: Field | undefined, shown: string | undefined, converted: string | undefined): string {
-  if (!f || !shown) return EMPTY_CELL
-  return plain(f, converted ? `${shown} (≈ ${converted}, converted)` : shown)
+// Converted values lead, in the table's units, followed by what the source said.
+function withConverted(f: Field | undefined, v: CardValue | undefined): string {
+  if (!f || !v?.shown) return EMPTY_CELL
+  return plain(f, v.converted ? `${v.converted} (converted from ${v.from})` : v.shown)
 }
 
 function temperature(f: Field | undefined): string {
-  return f ? withConverted(f, f.value, convertTemperature(f.value)) : EMPTY_CELL
+  return f ? withConverted(f, temperatureForCard(f.value)) : EMPTY_CELL
 }
 
 export function cellsFor(card: ChemicalCard): Record<string, string> {
@@ -63,12 +66,12 @@ export function cellsFor(card: ChemicalCard): Record<string, string> {
   const vp = f.vapor_pressure && vapourPressureForCard(f.vapor_pressure.value)
   const waste = f.waste_container
   return {
-    name: plain(g('name')),
+    name: plain(g('name'), undefined, false),
     formula: plain(g('formula')),
     mw: plain(g('mw')),
     bpmp: `BP: ${temperature(g('bp'))}\nMP: ${temperature(g('mp'))}`,
-    density: f.density ? plain(f.density, (f.density.quantity === 'relative_density' ? 'relative density ' : '') + f.density.value) : EMPTY_CELL,
-    vp: f.vapor_pressure && vp ? withConverted(f.vapor_pressure, vp.shown, vp.converted) : EMPTY_CELL,
+    density: f.density ? plain(f.density, (f.density.quantity === 'relative_density' ? 'relative density ' : '') + densityForCard(f.density.value).shown) : EMPTY_CELL,
+    vp: f.vapor_pressure && vp ? withConverted(f.vapor_pressure, vp) : EMPTY_CELL,
     waste: waste ? plain(waste) + (waste.status === 'pending' && waste.origin === 'rule' ? ' †' : '') : EMPTY_CELL,
     fire: plain(g('nfpa_fire')),
     health: plain(g('nfpa_health')),

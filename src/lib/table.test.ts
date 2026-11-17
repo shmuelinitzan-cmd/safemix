@@ -18,8 +18,14 @@ describe('column order (the lab form)', () => {
 describe('cells', () => {
   const a = cellsFor(by('67-64-1'))
   it('puts BP and MP in one cell', () => expect(a.bpmp).toBe('BP: 56.08 °C\nMP: -94.9 °C'))
-  it('marks the hand-corrected density', () => expect(a.density).toBe('0.7902 g/cm³ at 20 °C (edited)'))
-  it('vapour pressure: first value, converted temperature', () => expect(a.vp).toBe('180 mmHg at 68 °F (≈ 180 mmHg at 20 °C, converted)'))
+  it('marks the hand-corrected density', () => expect(a.density).toBe('0.7902 g/mL at 20 °C (edited)'))
+  it('vapour pressure: first value, converted temperature', () => expect(a.vp).toBe('180 mmHg at 20 °C (converted from 68 °F)'))
+  it('never marks the chemical name as edited', () => {
+    const c = by('64-19-7')
+    const f = { ...c, fields: { ...c.fields, name: { ...c.fields.name!, value: 'Acetic acid (glacial)', origin: 'user' as const } } }
+    expect(cellsFor(f).name).toBe('Acetic acid (glacial)')
+  })
+  it('shows g/cu cm densities in g/mL, number untouched', () => expect(cellsFor(by('64-19-7')).density).toMatch(/^1\.0446 g\/mL at 25 °C/))
   it('marks the unconfirmed waste container', () => expect(a.waste).toBe('organic †'))
   it('empty special hazard is the empty marker', () => expect(a.special).toBe(EMPTY_CELL))
   it('has the NFPA special symbol where PubChem gave one', () => expect(cellsFor(by('7722-84-1')).special).toBe('OX'))
@@ -27,7 +33,7 @@ describe('cells', () => {
   it('converts a °F boiling point and says so', () => {
     const c = by('67-64-1')
     const f = { ...c, fields: { ...c.fields, bp: { ...c.fields.bp!, value: '133 °F at 760 mmHg', origin: 'source' as const } } }
-    expect(cellsFor(f).bpmp).toContain('133 °F at 760 mmHg (≈ 56.1 °C, converted)')
+    expect(cellsFor(f).bpmp).toContain('56.1 °C at 760 mmHg (converted from 133 °F)')
   })
   it('does not invent values for a missing field', () => {
     const c = by('67-64-1')

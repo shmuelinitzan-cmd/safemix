@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import type { Field, FieldKey } from '../types/card.ts'
 import { FIELD_LABELS, NO_DATA_LABEL, WASTE_CATEGORIES } from '../types/card.ts'
-import { convertTemperature, vapourPressureForCard } from '../lib/units.ts'
+import { densityForCard, temperatureForCard, vapourPressureForCard, type CardValue } from '../lib/units.ts'
 import { shortSource } from '../lib/sources.ts'
 
 const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'You (edited)', app: 'Rule' }
 
 // What the card shows for a value, and a converted version when the unit differs.
 // The stored text is never changed; the full original goes in the source details.
-function display(key: FieldKey, f: Field): { shown: string; converted?: string } {
+function display(key: FieldKey, f: Field): CardValue {
   if (key === 'vapor_pressure') return vapourPressureForCard(f.value)
-  if (key === 'bp' || key === 'mp') return { shown: f.value, converted: convertTemperature(f.value) }
+  if (key === 'bp' || key === 'mp') return temperatureForCard(f.value)
+  if (key === 'density') return densityForCard(f.value)
   return { shown: f.value }
 }
 
@@ -74,14 +75,14 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
             {field ? (
               <span>
                 {field.quantity === 'relative_density' && <span className="text-slate-500">relative density </span>}
-                {disp!.shown}
+                {conv ?? disp!.shown}
                 {field.unit && k === 'mw' ? ` ${field.unit}` : ''}
                 {field.condition && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">applies to: {field.condition}</span>}
               </span>
             ) : (
               <span className="italic text-slate-400">{NO_DATA_LABEL}</span>
             )}
-            {conv && <span className="text-sm text-slate-500">≈ {conv} <em>(converted)</em></span>}
+            {conv && <span className="text-sm text-slate-500"><em>converted from {disp!.from}</em></span>}
             {field && (
               <a href={field.source_url || undefined} target="_blank" rel="noreferrer"
                 className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700 hover:bg-slate-200"

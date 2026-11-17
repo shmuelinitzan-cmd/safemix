@@ -8,12 +8,12 @@ const cards = demo as unknown as ChemicalCard[]
 
 describe('vapour pressure on the card', () => {
   it('shows only the first value with its temperature, and converts that temperature', () => {
-    expect(vapourPressureForCard('180 mmHg at 68 °F ; 270 mmHg at 86 °F (NTP, 1992)')).toEqual({ shown: '180 mmHg at 68 °F', converted: '180 mmHg at 20 °C' })
-    expect(vapourPressureForCard('40 mmHg at 66 °F ; 50 mmHg at 77 °F (NTP, 1992)')).toEqual({ shown: '40 mmHg at 66 °F', converted: '40 mmHg at 18.9 °C' })
-    expect(vapourPressureForCard('11.4 mmHg at 68 °F ; 20 mmHg at 86 °F (NTP, 1992)')).toEqual({ shown: '11.4 mmHg at 68 °F', converted: '11.4 mmHg at 20 °C' })
+    expect(vapourPressureForCard('180 mmHg at 68 °F ; 270 mmHg at 86 °F (NTP, 1992)')).toEqual({ shown: '180 mmHg at 68 °F', converted: '180 mmHg at 20 °C', from: '68 °F' })
+    expect(vapourPressureForCard('40 mmHg at 66 °F ; 50 mmHg at 77 °F (NTP, 1992)')).toEqual({ shown: '40 mmHg at 66 °F', converted: '40 mmHg at 18.9 °C', from: '66 °F' })
+    expect(vapourPressureForCard('11.4 mmHg at 68 °F ; 20 mmHg at 86 °F (NTP, 1992)')).toEqual({ shown: '11.4 mmHg at 68 °F', converted: '11.4 mmHg at 20 °C', from: '68 °F' })
   })
   it('drops the trailing citation from a single value but keeps "(approx)"', () => {
-    expect(vapourPressureForCard('1 mmHg at 59.5 °F (NTP, 1992)')).toEqual({ shown: '1 mmHg at 59.5 °F', converted: '1 mmHg at 15.3 °C' })
+    expect(vapourPressureForCard('1 mmHg at 59.5 °F (NTP, 1992)')).toEqual({ shown: '1 mmHg at 59.5 °F', converted: '1 mmHg at 15.3 °C', from: '59.5 °F' })
     expect(vapourPressureForCard('0 mmHg (approx) (NIOSH, 2024)')).toEqual({ shown: '0 mmHg (approx)' })
   })
   it('has no conversion when everything is already in mmHg and °C', () => {
