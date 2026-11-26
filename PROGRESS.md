@@ -52,16 +52,16 @@ Last updated: 2026-11-26
   - "Source details" wraps long citations and links.
   - The experiment table keeps the chemical name column pinned while scrolling sideways. The table now uses separate borders (collapsed borders let scrolled text show beside the pinned cell).
   - 163 tests, type check, lint and build pass. Checked in headless Chrome: at 390 and 320 px, no text in the opened "Source details" is cut off on six cards, and the name column stays visible across the table scroll; desktop looks right. Not checked on a physical phone or in Safari.
+- **README screenshots retaken (2026-11-26).** Same file names and pixel sizes, from a new Chrome profile. Library, card and PDF images use only the five demo cards; the table image adds iodoform (live PubChem lookup) so a GHS row shows. Its waste suggestion was kept unconfirmed (†) in that test profile. For the table image only, the page width limit was lifted to keep the old framing.
 
 ## Next steps (pilot phase)
-1. **Retake the README screenshots** (`docs/library.jpg` predates the peroxide mark; check the others).
-2. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
-3. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). The "Lab 1 - Iodoform + alkyl halide tests" experiment (12 chemicals) was, as of 2026-11-17, only in the Claude app's built-in browser; rebuild it in Nitzan's own browser or use Export all / Import.
-4. *(Optional)* **Fill Lab 1 gaps from supplier SDSs:**
+1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
+2. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). The "Lab 1 - Iodoform + alkyl halide tests" experiment (12 chemicals) was, as of 2026-11-17, only in the Claude app's built-in browser; rebuild it in Nitzan's own browser or use Export all / Import.
+3. *(Optional)* **Fill Lab 1 gaps from supplier SDSs:**
    - NFPA missing: KI, NaOCl, AgNO3, Cu, iodoform, 2-chlorobutane, tert-butyl chloride.
    - Exposure missing: KI, 2-chlorobutane, tert-butyl chloride. MP missing: 2-chlorobutane, tert-butyl chloride. VP missing: AgNO3.
    - Solution cards needed: NaOCl 5%, AgNO3 2% in ethanol, HNO3 5%. A solution looked up as the pure compound gets pure-compound data.
-5. README: add a demo GIF.
+4. README: add a demo GIF.
 
 ## Not verified
 - **Hydrogen peroxide concentration:** the demo values (BP 150.2 °C, NFPA 3/3/OX) look like concentrated peroxide. Which concentration they belong to, and which the lab uses, is not verified.

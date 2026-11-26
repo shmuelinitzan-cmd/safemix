@@ -6,7 +6,7 @@ SafeMix is a browser app that helps you prepare for a chemistry lab. You search 
 
 **Live demo:** https://shmuelinitzan-cmd.github.io/safemix/ (no sign-up; 5 demo chemicals included)
 
-![Experiment table with cited values and GHS shown where no NFPA rating exists](docs/experiment-table.jpg)
+![Experiment table with GHS shown where no NFPA rating exists, and unverified items marked](docs/experiment-table.jpg)
 
 ## Why
 
