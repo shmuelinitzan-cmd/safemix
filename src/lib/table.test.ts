@@ -73,7 +73,7 @@ describe('sources list', () => {
   it('records the manual density correction and what the source had', () => {
     const d = rows.find((r) => r.field.startsWith('Density'))!
     expect(d.detail).toContain('Corrected after manual check against CRC Handbook 107th ed.')
-    expect(d.detail).toContain('Source had: 0.7845 g/cu cm at 20 °C')
+    expect(d.detail).toContain('Previous value: 0.7845 g/cu cm at 20 °C')
     expect(d.source).toBe('CRC Handbook 107th ed.')
     expect(d.url).toBe('')
   })

@@ -71,7 +71,7 @@ I used SafeMix to rebuild the chemical table for a real organic chemistry lab: i
 - **App:** Vite, React, TypeScript and Tailwind CSS. It runs entirely in the browser, with no server and no login.
 - **Storage:** IndexedDB (Dexie). Your library stays on your own computer.
 - **PDF export:** jsPDF and jspdf-autotable.
-- **Tests:** 160 Vitest tests covering data parsing, unit handling, the GHS rule, waste rules, import validation and exports.
+- **Tests:** 163 Vitest tests covering data parsing, unit handling, the GHS rule, waste rules, import validation and exports.
 - **Hosting:** GitHub Pages, deployed by GitHub Actions.
 - **Built with:** AI-assisted development (Claude Code), following the written specification in [SPEC.md](SPEC.md).
 

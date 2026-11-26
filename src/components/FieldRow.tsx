@@ -138,7 +138,7 @@ export default function FieldRow({ k, field, notVerified, reference, onEdit }: P
         )}
         {field && !editing && <Details field={field} shown={disp!.shown} label={label} url={url} />}
         {isRule && <p className="mt-1 text-xs text-amber-700">Rule-based, confirm with lab instructions.</p>}
-        {field?.note && <p className="mt-1 text-xs text-slate-600">{field.note}{field.source_value ? ` (PubChem had: ${field.source_value})` : ''}</p>}
+        {field?.note && <p className="mt-1 text-xs text-slate-600">{field.note}{field.source_value ? ` (Previous value: ${field.source_value})` : ''}</p>}
       </div>
     </div>
   )

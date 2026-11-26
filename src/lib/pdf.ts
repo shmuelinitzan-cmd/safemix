@@ -2,6 +2,7 @@
 // sources for every value on the last pages. jsPDF is loaded only when the user exports.
 import type { ChemicalCard } from '../types/card.ts'
 import { COLUMNS, cellsFor, FOOTNOTES, ghsInsteadOfNfpa, NFPA_IDS, sourceRows } from './table.ts'
+import { NOT_VERIFIED } from './provenance.ts'
 
 export const DISCLAIMER = 'Draft for educational use. Verify against the supplier SDS before use.'
 
@@ -12,6 +13,14 @@ export function pdfSafe(s: string): string {
   return [...s.replace(/≈\s*/g, '~').replace(/[−]/g, '-').replace(/[   ]/g, ' ')]
     .map((ch) => (ch === '\n' || ch.charCodeAt(0) <= 0xff || WIN1252_EXTRA.includes(ch) ? ch : '?'))
     .join('')
+}
+
+// The NFPA columns are too narrow for the words, so in the PDF they get a "*" instead.
+export const NFPA_STAR_NOTE = `* in the NFPA 704 columns = ${NOT_VERIFIED}.`
+export const PDF_INTRO = `Sources are listed on the last pages. Values marked "${NOT_VERIFIED}" (* in the NFPA columns) have no verified source.`
+export function pdfCell(columnId: string, text: string): string {
+  const mark = ` (${NOT_VERIFIED})`
+  return NFPA_IDS.includes(columnId) && text.endsWith(mark) ? `${text.slice(0, -mark.length)}*` : text
 }
 
 const hexToRgb = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number]
@@ -25,7 +34,7 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
   doc.setFont('helvetica', 'bold').setFontSize(14)
   doc.text(pdfSafe(`Experiment: ${name}`), M, 12)
   doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(90)
-  doc.text(pdfSafe(`SafeMix, ${date}. ${cards.length} chemical${cards.length === 1 ? '' : 's'}. Values come from the sources listed on the last pages.`), M, 17)
+  doc.text(pdfSafe(`SafeMix, ${date}. ${cards.length} chemical${cards.length === 1 ? '' : 's'}. ${PDF_INTRO}`), M, 17)
   doc.setTextColor(0)
 
   // ---- the lab table ----
@@ -38,6 +47,7 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
   ]
   const body = cards.map((card) => {
     const cells = cellsFor(card)
+    for (const id of NFPA_IDS) cells[id] = pdfCell(id, cells[id])
     const ghs = ghsInsteadOfNfpa(card)
     if (!ghs) return COLUMNS.map((c) => pdfSafe(cells[c.id]))
     // no NFPA rating: one merged cell with the GHS statements across the four NFPA columns
@@ -75,9 +85,11 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
   // legend under the table (new page if it would not fit)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let y: number = (doc as any).lastAutoTable.finalY + 5
-  if (y > doc.internal.pageSize.getHeight() - 28) { doc.addPage(); y = 14 }
+  const notes = [...FOOTNOTES, NFPA_STAR_NOTE]
+  // each note takes 3.6 mm; the last one must stay clear of the page footer
+  if (y > doc.internal.pageSize.getHeight() - 10 - notes.length * 3.6) { doc.addPage(); y = 14 }
   doc.setFontSize(7).setTextColor(60)
-  for (const note of FOOTNOTES) { doc.text(pdfSafe(note), M, y); y += 3.6 }
+  for (const note of notes) { doc.text(pdfSafe(note), M, y); y += 3.6 }
   doc.setTextColor(0)
   void groups
 

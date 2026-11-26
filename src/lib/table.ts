@@ -145,7 +145,7 @@ export function sourceRows(cards: ChemicalCard[]): SourceRow[] {
       const detail = [
         f.upstream_citation,
         f.note,
-        f.source_value ? `Source had: ${f.source_value}` : undefined,
+        f.source_value ? `Previous value: ${f.source_value}` : undefined,
         f.origin === 'rule' && f.status === 'pending' ? 'Rule-based suggestion, not yet confirmed.' : undefined,
       ].filter(Boolean).join(' ')
       const reference = documentedReference(card, k)

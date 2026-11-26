@@ -5,6 +5,7 @@ import type { ChemicalCard } from '../types/card.ts'
 import { approveCard, editField } from './cards.ts'
 import { documentedReference, isNotVerified } from './provenance.ts'
 import { cellsFor, sourceRows, toCsv } from './table.ts'
+import { buildExperimentPdfDoc, NFPA_STAR_NOTE, pdfCell } from './pdf.ts'
 import CardScreen from '../screens/CardScreen.tsx'
 import NfpaDiamond from '../components/NfpaDiamond.tsx'
 
@@ -63,5 +64,26 @@ describe('documented CRC correction (acetone density)', () => {
   it('does not carry to another chemical', () => {
     const copy = { ...ethanol, fields: { ...ethanol.fields, density: acetone.fields.density! } }
     expect(isNotVerified(copy, 'density')).toBe(true)
+  })
+})
+
+describe('PDF markers and earlier values', () => {
+  it('uses "*" in the NFPA columns only', () => {
+    expect(pdfCell('fire', 'TEST (Not verified)')).toBe('TEST*')
+    expect(pdfCell('bpmp', 'TEST (Not verified)')).toBe('TEST (Not verified)')
+    expect(pdfCell('fire', 'TEST (SDS)')).toBe('TEST (SDS)')
+  })
+  it('explains the "*" below the table', async () => {
+    const doc = await buildExperimentPdfDoc('t', [editField(ethanol, 'nfpa_fire', 'TEST')], '2026-11-26')
+    const raw = doc.output()
+    expect(raw).toContain('(TEST*)')
+    expect(raw).toContain(NFPA_STAR_NOTE)
+  })
+  it('does not say PubChem supplied a value that came from the waste rule', () => {
+    const c = editField(ethanol, 'waste_container', 'inorganic')
+    const html = renderToStaticMarkup(<CardScreen card={c} saved onSave={noop} onDelete={noop} onBack={() => {}} />)
+    expect(html).toContain('Previous value: organic')
+    expect(html).not.toContain('PubChem had')
+    expect(sourceRows([c]).find((r) => r.field === 'Waste container')!.detail).toContain('Previous value: organic')
   })
 })

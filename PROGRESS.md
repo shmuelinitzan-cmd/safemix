@@ -41,10 +41,16 @@ Last updated: 2026-11-26
   - NIOSH is not planned for now: removed from SPEC and the draft CV line. The reader (`src/lib/niosh.ts`, used only by `scripts/review-pubchem.ts`) is still in the code.
   - Values typed in by hand without a named SDS (including names and a hand-picked waste container) show "Not verified" on the card, experiment table, PDF and CSV; the NFPA diamond stars them. Approval doesn't remove it. Named-SDS values keep "(SDS)". The documented acetone density correction shows "CRC Handbook 107th ed." as its source. Logic in `src/lib/provenance.ts`.
   - README: the three hand-filled-table "inconsistencies" are marked "Not verified". CV line replaced in SPEC.
-  - 160 tests, type check, lint and build pass. Not yet checked by eye in a real browser.
+  - 160 tests, type check, lint and build pass.
+- **Fixes from the browser check (2026-11-26, committed, not pushed).**
+  - Earlier values read "Previous value: …" (card and PDF); before, a rule-based waste suggestion was labelled "PubChem had".
+  - PDF: NFPA columns mark unverified values with "*", explained below the table; the introduction allows for "Not verified" values.
+  - Library: all diamonds take the same width, so names line up.
+  - 163 tests, type check, lint and build pass.
+  - Checked in headless Chrome with an empty profile: the labels, the four fixes, a live PubChem search (iodoform: GHS shown where there is no NFPA rating) and a 390 px phone screen (see Known issues). Not checked in a browser: live non-ECHA GHS note, library export / import, solution cards, a physical phone.
 
 ## Next steps (pilot phase)
-1. **Check the 2026-11-26 changes in a browser** (`npm run dev`), then ask Nitzan before pushing. Retake the README screenshots (`docs/library.jpg` predates the peroxide mark; check the others).
+1. **Ask Nitzan before pushing** the 2026-11-26 commits. Retake the README screenshots (`docs/library.jpg` predates the peroxide mark; check the others).
 2. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
 3. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). The "Lab 1 - Iodoform + alkyl halide tests" experiment (12 chemicals) was, as of 2026-11-17, only in the Claude app's built-in browser; rebuild it in Nitzan's own browser or use Export all / Import.
 4. *(Optional)* **Fill Lab 1 gaps from supplier SDSs:**
@@ -61,7 +67,9 @@ Last updated: 2026-11-26
 ## Known issues
 - **Peroxide mark is tied to the stored card ID** (left as is for now, Nitzan's decision 2026-11-26). It's added to the demo card, or any stored card with ID `cas-7722-84-1`. If that card is deleted and hydrogen peroxide is looked up again, the new card has no "Concentration not verified" mark. Replacing it from an older backup removes the mark until the app reloads.
 - Cards saved before 2026-11-26 keep their old GHS note.
-- The CSV and the on-screen experiment table don't name the source of PubChem values; the card and the PDF sources pages do.
+- The CSV, the on-screen experiment table and the library list don't name the source of PubChem values; the card and the PDF sources pages do.
+- **Phone screens:** opening "Source details" on a card makes the page wider than the screen (390 px screen, 514 px page) and cuts off the citation and link (`Details` in `src/components/FieldRow.tsx`).
+- Phone screens, minor: the search boxes' placeholder text is cut off; the experiment table scrolls sideways inside its box, and the chemical name scrolls out of view.
 
 ## Waiting for Nitzan
 1. Waste: which container acetic acid and hydrogen peroxide go in. Iodoform: the hand table says organic, the rule says halogenated organic; confirm with the lab.

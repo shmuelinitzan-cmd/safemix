@@ -14,9 +14,9 @@ const noop = async () => {}
 describe('card screen', () => {
   const html = renderToStaticMarkup(<CardScreen card={acetone} saved onSave={noop} onDelete={noop} onBack={() => {}} />)
   it('shows the education banner', () => expect(html).toContain('Draft for educational use. Verify against the supplier SDS before use.'))
-  it('shows the corrected acetone density and what PubChem had', () => {
+  it('shows the corrected acetone density and the previous value', () => {
     expect(html).toContain('0.7902 g/mL at 20 °C')
-    expect(html).toContain('PubChem had: 0.7845 g/cu cm at 20 °C')
+    expect(html).toContain('Previous value: 0.7845 g/cu cm at 20 °C')
     expect(html).toContain('Corrected after manual check against CRC Handbook 107th ed.')
   })
   it('shows "No data" for the empty special hazard', () => expect(html).toContain('No data from approved sources'))

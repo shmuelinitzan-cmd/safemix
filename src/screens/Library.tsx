@@ -103,7 +103,7 @@ export default function Library(p: Props) {
         {shown.map((c) => (
           <li key={c.id}>
             <button onClick={() => p.onOpen(c)} className="flex w-full items-center gap-4 rounded-lg border border-slate-200 bg-white p-3 text-left hover:border-emerald-600">
-              <NfpaDiamond card={c} size={64} />
+              <span className="flex w-24 shrink-0 justify-center"><NfpaDiamond card={c} size={64} /></span>
               <span>
                 <span className="block font-semibold">{c.fields.name?.value}</span>
                 {isNotVerified(c, 'name') && <span className="block text-xs text-amber-800">Name: {NOT_VERIFIED}</span>}
