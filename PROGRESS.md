@@ -48,6 +48,10 @@ Last updated: 2026-11-26
   - Library: all diamonds take the same width, so names line up.
   - 163 tests, type check, lint and build pass.
   - Checked in headless Chrome with an empty profile: the labels, the four fixes, a live PubChem search (iodoform: GHS shown where there is no NFPA rating) and a 390 px phone screen (see Known issues). Not checked in a browser: live non-ECHA GHS note, library export / import, solution cards, a physical phone.
+- **Phone fixes (2026-11-26, committed, not pushed).**
+  - "Source details" wraps long citations and links.
+  - The experiment table keeps the chemical name column pinned while scrolling sideways. The table now uses separate borders (collapsed borders let scrolled text show beside the pinned cell).
+  - 163 tests, type check, lint and build pass. Checked in headless Chrome: at 390 and 320 px, no text in the opened "Source details" is cut off on six cards, and the name column stays visible across the table scroll; desktop looks right. Not checked on a physical phone or in Safari.
 
 ## Next steps (pilot phase)
 1. **Ask Nitzan before pushing** the 2026-11-26 commits. Retake the README screenshots (`docs/library.jpg` predates the peroxide mark; check the others).
@@ -68,8 +72,8 @@ Last updated: 2026-11-26
 - **Peroxide mark is tied to the stored card ID** (left as is for now, Nitzan's decision 2026-11-26). It's added to the demo card, or any stored card with ID `cas-7722-84-1`. If that card is deleted and hydrogen peroxide is looked up again, the new card has no "Concentration not verified" mark. Replacing it from an older backup removes the mark until the app reloads.
 - Cards saved before 2026-11-26 keep their old GHS note.
 - The CSV, the on-screen experiment table and the library list don't name the source of PubChem values; the card and the PDF sources pages do.
-- **Phone screens:** opening "Source details" on a card makes the page wider than the screen (390 px screen, 514 px page) and cuts off the citation and link (`Details` in `src/components/FieldRow.tsx`).
-- Phone screens, minor: the search boxes' placeholder text is cut off; the experiment table scrolls sideways inside its box, and the chemical name scrolls out of view.
+- Very narrow phones (320 px): on some cards with a structure picture (ethanol, acetic acid), the picture makes the page 16 px too wide (`StructureImage`). Not seen at 390 px.
+- Phone screens, minor: the search boxes' placeholder text is cut off.
 
 ## Waiting for Nitzan
 1. Waste: which container acetic acid and hydrogen peroxide go in. Iodoform: the hand table says organic, the rule says halogenated organic; confirm with the lab.

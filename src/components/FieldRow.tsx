@@ -38,11 +38,11 @@ function Details({ field, shown, label, url }: { field: Field; shown: string; la
   return (
     <details className="mt-1 text-xs text-slate-600">
       <summary className="cursor-pointer text-slate-500">Source details</summary>
-      <dl className="mt-1 grid grid-cols-[6rem_1fr] gap-x-2 gap-y-0.5">
+      <dl className="mt-1 grid grid-cols-[6rem_minmax(0,1fr)] gap-x-2 gap-y-0.5">
         {rows.filter(([, v]) => v).map(([l, v]) => (
           <div key={l} className="contents">
             <dt className="text-slate-500">{l}</dt>
-            <dd className="break-words">{l === 'Link' ? <a href={v} target="_blank" rel="noreferrer" className="underline">{v}</a> : v}</dd>
+            <dd className="[overflow-wrap:anywhere]">{l === 'Link' ? <a href={v} target="_blank" rel="noreferrer" className="underline">{v}</a> : v}</dd>
           </div>
         ))}
       </dl>
@@ -78,7 +78,7 @@ export default function FieldRow({ k, field, notVerified, reference, onEdit }: P
   const url = field && field.source !== 'user' ? field.source_url || undefined : undefined
 
   return (
-    <div className="grid gap-1 border-b border-slate-100 py-2 sm:grid-cols-[11rem_1fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-1 border-b border-slate-100 py-2 sm:grid-cols-[11rem_minmax(0,1fr)]">
       <div className="text-sm font-medium text-slate-600">{FIELD_LABELS[k]}</div>
       <div>
         {editing ? (
