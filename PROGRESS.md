@@ -4,7 +4,7 @@ Last updated: 2026-11-26
 
 **Current phase:** piloting SafeMix on real lab experiments.
 
-**Git:** everything up to commit `10b538b` (2026-11-17) is pushed to `shmuelinitzan-cmd/safemix`. The 2026-11-26 changes below are committed locally, **not pushed**, so the live site doesn't have them yet.
+**Git:** the 2026-11-26 changes below are pushed to `shmuelinitzan-cmd/safemix` (Nitzan approved the push). A push to `main` deploys the live site through GitHub Actions.
 
 ## Done
 - **Phase 0 – Setup.** Live at https://shmuelinitzan-cmd.github.io/safemix/
@@ -34,7 +34,7 @@ Last updated: 2026-11-26
 - **GHS instead of NFPA (2026-11-17, pushed).** New card field "GHS hazards": the GHS statements at least half of the notifiers reported (ECHA via PubChem), with the strongest signal word among them. When a card has NO NFPA rating, the table, PDF and CSV show one merged GHS cell in place of the four NFPA columns (orange). Never converted to NFPA numbers. Decision: supplier SDS is optional, not required; SafeMix shows what approved sources have and says plainly what is missing. 144 tests pass.
 - README with screenshots (2026-11-17, pushed; images in docs/).
 
-- **Honesty fixes (2026-11-26, committed, not pushed).**
+- **Honesty fixes (2026-11-26, pushed).**
   - Intro now mentions only the documented CRC correction (acetone density). Which other demo values were checked against CRC can't be confirmed.
   - Hydrogen peroxide demo card marked "Concentration not verified" (card, library, experiment table, PDF, CSV; kept in JSON export/import). Browsers that already have the card get the mark on next load.
   - GHS notes: only ECHA entries mention notifiers; otherwise the note names the real source. Keeping statements with no percentage is intended. Cards already saved keep their old note.
@@ -42,19 +42,19 @@ Last updated: 2026-11-26
   - Values typed in by hand without a named SDS (including names and a hand-picked waste container) show "Not verified" on the card, experiment table, PDF and CSV; the NFPA diamond stars them. Approval doesn't remove it. Named-SDS values keep "(SDS)". The documented acetone density correction shows "CRC Handbook 107th ed." as its source. Logic in `src/lib/provenance.ts`.
   - README: the three hand-filled-table "inconsistencies" are marked "Not verified". CV line replaced in SPEC.
   - 160 tests, type check, lint and build pass.
-- **Fixes from the browser check (2026-11-26, committed, not pushed).**
+- **Fixes from the browser check (2026-11-26, pushed).**
   - Earlier values read "Previous value: …" (card and PDF); before, a rule-based waste suggestion was labelled "PubChem had".
   - PDF: NFPA columns mark unverified values with "*", explained below the table; the introduction allows for "Not verified" values.
   - Library: all diamonds take the same width, so names line up.
   - 163 tests, type check, lint and build pass.
   - Checked in headless Chrome with an empty profile: the labels, the four fixes, a live PubChem search (iodoform: GHS shown where there is no NFPA rating) and a 390 px phone screen (see Known issues). Not checked in a browser: live non-ECHA GHS note, library export / import, solution cards, a physical phone.
-- **Phone fixes (2026-11-26, committed, not pushed).**
+- **Phone fixes (2026-11-26, pushed).**
   - "Source details" wraps long citations and links.
   - The experiment table keeps the chemical name column pinned while scrolling sideways. The table now uses separate borders (collapsed borders let scrolled text show beside the pinned cell).
   - 163 tests, type check, lint and build pass. Checked in headless Chrome: at 390 and 320 px, no text in the opened "Source details" is cut off on six cards, and the name column stays visible across the table scroll; desktop looks right. Not checked on a physical phone or in Safari.
 
 ## Next steps (pilot phase)
-1. **Ask Nitzan before pushing** the 2026-11-26 commits. Retake the README screenshots (`docs/library.jpg` predates the peroxide mark; check the others).
+1. **Retake the README screenshots** (`docs/library.jpg` predates the peroxide mark; check the others).
 2. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
 3. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). The "Lab 1 - Iodoform + alkyl halide tests" experiment (12 chemicals) was, as of 2026-11-17, only in the Claude app's built-in browser; rebuild it in Nitzan's own browser or use Export all / Import.
 4. *(Optional)* **Fill Lab 1 gaps from supplier SDSs:**
