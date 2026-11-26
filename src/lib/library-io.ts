@@ -95,6 +95,7 @@ export function validateCard(x: unknown, index: number): ChemicalCard {
   }
   if (x.structure !== undefined) card.structure = structure(x.structure, `${what} picture`)
   if (x.concentration !== undefined) card.concentration = str(x.concentration, `${what} concentration`, 200)
+  if (x.not_verified !== undefined) card.not_verified = str(x.not_verified, `${what} not-verified note`, 300)
   if (x.parent_id !== undefined) card.parent_id = str(x.parent_id, `${what} parent id`, 200)
   return card
 }

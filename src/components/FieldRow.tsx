@@ -4,12 +4,13 @@ import { FIELD_LABELS, NO_DATA_LABEL, WASTE_CATEGORIES } from '../types/card.ts'
 import { densityForCard, temperatureForCard, vapourPressureForCard, type CardValue } from '../lib/units.ts'
 import { shortSource } from '../lib/sources.ts'
 import type { SdsCitation } from '../lib/cards.ts'
+import { NOT_VERIFIED } from '../lib/provenance.ts'
 
 // The last SDS citation typed in, offered again for the next value (most values on a card
 // come from the same SDS). Kept only while the page is open.
 let lastSds: SdsCitation = { citation: '' }
 
-const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'You (edited)', app: 'Rule', sds: 'Supplier SDS' }
+const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: NOT_VERIFIED, app: 'Rule', sds: 'Supplier SDS' }
 
 // What the card shows for a value, and a converted version when the unit differs.
 // The stored text is never changed; the full original goes in the source details.
@@ -25,14 +26,14 @@ function badgeSuffix(f: Field): string | undefined {
   return short && short !== 'PubChem' ? short : undefined
 }
 
-function Details({ field, shown }: { field: Field; shown: string }) {
+function Details({ field, shown, label, url }: { field: Field; shown: string; label: string; url?: string }) {
   const rows: [string, string | undefined][] = [
-    ['Source', SOURCE_NAMES[field.source]],
+    ['Source', label],
     [field.source === 'sds' ? 'SDS' : 'Via', field.upstream],
     ['Citation', field.upstream_citation],
     ['Original text', field.value !== shown ? field.value : undefined],
     ['Retrieved', field.retrieved_at],
-    ['Link', field.source_url || undefined],
+    ['Link', url],
   ]
   return (
     <details className="mt-1 text-xs text-slate-600">
@@ -49,7 +50,15 @@ function Details({ field, shown }: { field: Field; shown: string }) {
   )
 }
 
-export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Field; onEdit: (value: string, sds?: SdsCitation) => void }) {
+interface Props {
+  k: FieldKey
+  field?: Field
+  notVerified?: boolean
+  reference?: string // the documented reference book, if there is one
+  onEdit: (value: string, sds?: SdsCitation) => void
+}
+
+export default function FieldRow({ k, field, notVerified, reference, onEdit }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [fromSds, setFromSds] = useState(true)
@@ -64,6 +73,9 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
   const disp = field && display(k, field)
   const conv = disp?.converted
   const isRule = field?.origin === 'rule' && field.status !== 'approved'
+  const label = field ? reference ?? (notVerified ? NOT_VERIFIED : SOURCE_NAMES[field.source]) : ''
+  // a hand-entered value gets no link: an older source's link would not back it
+  const url = field && field.source !== 'user' ? field.source_url || undefined : undefined
 
   return (
     <div className="grid gap-1 border-b border-slate-100 py-2 sm:grid-cols-[11rem_1fr]">
@@ -115,16 +127,16 @@ export default function FieldRow({ k, field, onEdit }: { k: FieldKey; field?: Fi
             )}
             {conv && <span className="text-sm text-slate-500"><em>converted from {disp!.from}</em></span>}
             {field && (
-              <a href={field.source_url || undefined} target="_blank" rel="noreferrer"
-                className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700 hover:bg-slate-200"
-                title={[SOURCE_NAMES[field.source], field.upstream && `via ${field.upstream}`, `retrieved ${field.retrieved_at}`].filter(Boolean).join(' · ')}>
-                {SOURCE_NAMES[field.source]}{field.source === 'pubchem' && badgeSuffix(field) ? ` · ${badgeSuffix(field)}` : ''}
+              <a href={url} target="_blank" rel="noreferrer"
+                className={`rounded-full px-2 py-0.5 text-xs ${notVerified ? 'bg-amber-100 font-medium text-amber-900' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                title={[label, field.upstream && `via ${field.upstream}`, `retrieved ${field.retrieved_at}`].filter(Boolean).join(' · ')}>
+                {label}{field.source === 'pubchem' && badgeSuffix(field) ? ` · ${badgeSuffix(field)}` : ''}
               </a>
             )}
             <button onClick={start} className="text-sm text-emerald-700 underline">Edit</button>
           </div>
         )}
-        {field && !editing && <Details field={field} shown={disp!.shown} />}
+        {field && !editing && <Details field={field} shown={disp!.shown} label={label} url={url} />}
         {isRule && <p className="mt-1 text-xs text-amber-700">Rule-based, confirm with lab instructions.</p>}
         {field?.note && <p className="mt-1 text-xs text-slate-600">{field.note}{field.source_value ? ` (PubChem had: ${field.source_value})` : ''}</p>}
       </div>

@@ -1,6 +1,6 @@
 # SafeMix – Product Spec
 
-Nov 10, 2026 · Nitzan Shmueli · v2 (lab-table card) · Nov 17: GHS added as an exposure source
+Nov 10, 2026 · Nitzan Shmueli · v2 (lab-table card) · Nov 17: GHS added as an exposure source · Nov 26: NIOSH not planned for now
 
 ## Overview
 
@@ -26,19 +26,18 @@ The AI never creates safety data. It only reorganizes, quotes and explains data 
 
 ## Approved data sources
 
-PubChem is the live source for every field of the card; NIOSH and CAMEO add detail where PubChem has none.
+PubChem is the live source for every field of the card; CAMEO adds reactive groups for the compatibility matrix (phase 2). NIOSH is not planned for now.
 
 | Source | Fields it fills | How the app gets it | Phase |
 | --- | --- | --- | --- |
 | PubChem (NIH) | Name, formula, MW, BP, MP, density, vapour pressure, NFPA rating, exposure symptoms by route (via ICSC/HSDB data inside PubChem) | Live, free REST API (PUG REST / PUG View), lookup by name or CAS | 1 |
-| GHS hazard statements (ECHA C&L summary, via PubChem) | Exposure hazards by route, only where PubChem has no ICSC symptoms for that route. Statements reported by at least half of the notifiers, sorted to a route by H-code (see `src/lib/pubchem.ts`) | Live, same PubChem record | 1 |
-| NIOSH Pocket Guide | Exposure symptoms by route (eyes, skin, inhalation, ingestion) where PubChem has none | Static JSON for demo chemicals, prepared from the official pages | 1 |
+| GHS hazard statements (ECHA C&L summary, via PubChem) | Exposure hazards by route, only where PubChem has no ICSC symptoms for that route. Statements reported by at least half of the notifiers, or listed with no percentage, sorted to a route by H-code (see `src/lib/pubchem.ts`). If there is no ECHA entry, the first other GHS entry is used, and the card note names that source | Live, same PubChem record | 1 |
 | CAMEO Chemicals (NOAA) | Reactive groups for the compatibility matrix | Static JSON for demo chemicals | 2 |
-| GHS hazard statements, summary (ECHA via PubChem) | Shown in place of the NFPA columns only when no NFPA rating exists. Never converted to NFPA numbers | Live, same PubChem record | 1 |
+| GHS hazard statements, summary (ECHA via PubChem) | Shown in place of the NFPA columns only when no NFPA rating exists. Same selection and source rule as the row above. Never converted to NFPA numbers | Live, same PubChem record | 1 |
 | Supplier SDS (typed in by the user, optional) | Any field the sources above leave empty, and every value of a solution card | Typed in on the card, with the SDS named (supplier, product no., revision date) and an optional link; marked "(SDS)" | 1b |
-| CRC Handbook | Manual cross-check of demo values only | Not ingested, not redistributed | — |
+| CRC Handbook | Manual cross-check of demo values only (documented so far: acetone density) | Not ingested, not redistributed | — |
 
-Every stored value keeps its source name, URL and retrieval date. Open question: confirm the terms of use of each source before the public release.
+Every stored value keeps its source name, URL and retrieval date. A value typed in by hand without a named SDS (including a name or a waste container) is shown as "Not verified" on the card, in tables and in exports, even after approval. The one exception is a correction in `src/data/manual-corrections.ts` with a documented reference, which shows that reference (so far: acetone density, CRC Handbook 107th ed.). Open question: confirm the terms of use of each source before the public release.
 
 ## Features
 
@@ -66,7 +65,7 @@ A card holds exactly the columns of the lab's chemical table, nothing more, and 
 | Properties | Vapour pressure | mmHg | PubChem |
 | Disposal | Waste container: inorganic / acidic inorganic / basic / organic / halogenated organic | — | Rule-based suggestion from the formula and source data, confirmed by the user |
 | NFPA 704 (0–4) | Fire, Health, Reactivity, Special hazards | 0–4 / symbol | PubChem |
-| Exposure hazards | Eyes, Skin, Inhalation, Ingestion | text | PubChem (ICSC), NIOSH |
+| Exposure hazards | Eyes, Skin, Inhalation, Ingestion | text | PubChem (ICSC; GHS statements where ICSC has none) |
 
 Units: the original source value is stored as given. If it is in another unit (e.g. °F), the card also shows a converted value labelled "converted". Values that apply only to one concentration keep a `condition` note (e.g. ">60% solution").
 
@@ -138,6 +137,6 @@ Nitzan's own check after each phase: verify demo values by hand against the CRC 
 
 **Disclaimer (in app and README):** SafeMix produces draft safety cards for education and lab organisation. It is not a legally valid SDS and does not replace the supplier's sheet or the lab safety officer.
 
-**CV line (draft):** Built SafeMix, a browser-based lab-preparation tool that turns a chemical name into a cited safety card (properties, NFPA 704, exposure hazards, waste category) from PubChem and NIOSH, and cross-checks an experiment's chemicals in a compatibility matrix. Every value is source-cited; nothing is AI-generated. React, TypeScript, AI-assisted development (Claude Code). Live demo + GitHub.
+**CV line (draft):** Built SafeMix, a browser-based lab-preparation tool that turns a chemical name into a cited safety card (properties, NFPA 704, exposure hazards, waste category) from PubChem, with GHS hazard statements where no NFPA rating exists. Every value shows its source or is marked "Not verified"; nothing is AI-generated. React, TypeScript, AI-assisted development (Claude Code). Live demo + GitHub.
 
 **LinkedIn post angle:** what mixing spray chemicals in Australia taught you about reading SDS, and why the AI in your tool is not allowed to guess.

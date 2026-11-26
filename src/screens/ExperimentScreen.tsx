@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ChemicalCard } from '../types/card.ts'
 import type { Experiment } from '../types/experiment.ts'
 import ExperimentTable from '../components/ExperimentTable.tsx'
+import { isNotVerified, NOT_VERIFIED } from '../lib/provenance.ts'
 import { toCsv } from '../lib/table.ts'
 import { downloadFile, slug } from '../lib/download.ts'
 import { buildExperimentPdf, DISCLAIMER } from '../lib/pdf.ts'
@@ -76,7 +77,7 @@ export default function ExperimentScreen({ experiment, saved, library, onSave, o
               <li key={c.id}>
                 <label className="flex cursor-pointer items-center gap-2 py-0.5">
                   <input type="checkbox" checked={ids.includes(c.id)} onChange={() => toggle(c.id)} />
-                  <span>{c.fields.name?.value} <span className="text-sm text-slate-500">{c.fields.formula?.value}</span></span>
+                  <span>{c.fields.name?.value}{isNotVerified(c, 'name') ? ` (${NOT_VERIFIED})` : ''} <span className="text-sm text-slate-500">{c.fields.formula?.value}{isNotVerified(c, 'formula') ? ` (${NOT_VERIFIED})` : ''}</span></span>
                 </label>
               </li>
             ))}

@@ -33,6 +33,20 @@ describe('GHS fallback for exposure columns', () => {
     expect(g.info.ReferenceNumber).toBe(22)
     expect(g.statements.map((s) => s.code)).toEqual(['H302', 'H312', 'H315', 'H319', 'H332'])
   })
+  it('the note mentions notifiers only for the ECHA entry', () => {
+    const f = parseRecord(record(IODOFORM), '2026-11-17').fields
+    expect(f.ghs?.note).toContain('ECHA notifiers, or listed with no percentage')
+    expect(f.exp_eyes?.note).toContain('ECHA notifiers')
+  })
+  it('without an ECHA entry, the note names the real source', () => {
+    const r = record(IODOFORM)
+    ;(r.Section[0] as { Information: object[] }).Information.splice(0, 1) // leaves only the NITE-CMC entry
+    const f = parseRecord(r, '2026-11-17').fields
+    for (const note of [f.ghs?.note, f.exp_inhalation?.note]) {
+      expect(note).toContain('from NITE-CMC')
+      expect(note).not.toContain('notifiers')
+    }
+  })
   it('sorts statements to routes, text copied without percentage or class', () => {
     const f = parseRecord(record(IODOFORM), '2026-11-17').fields
     expect(f.exp_eyes?.value).toBe('H319: Causes serious eye irritation')

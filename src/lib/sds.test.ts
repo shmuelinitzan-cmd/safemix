@@ -27,10 +27,10 @@ describe('values typed in from a supplier SDS', () => {
   it('drops a link that is not https', () => {
     expect(editField(acetic, 'mp', 'X', undefined, { citation: 'A', url: 'javascript:alert(1)' }).fields.mp!.source_url).toBe('')
   })
-  it('without a citation it stays "entered by hand"', () => {
+  it('without a citation it is "Not verified"', () => {
     const h = editField(acetic, 'mp', 'X')
     expect(h.fields.mp!.source).toBe('user')
-    expect(cellsFor(h).bpmp).toContain('(edited)')
+    expect(cellsFor(h).bpmp).toContain('(Not verified)')
   })
 })
 

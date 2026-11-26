@@ -15,7 +15,7 @@ export default function Intro() {
         <button onClick={hide} className="shrink-0 text-sm text-emerald-800 underline" aria-label="Hide this introduction">Hide</button>
       </div>
       <ul className="mt-1 flex flex-col gap-x-6 gap-y-0.5 text-sm text-slate-700 sm:flex-row sm:flex-wrap">
-        {['Every value cites its source', 'Demo values verified against the CRC Handbook', 'No AI-generated data'].map((t) => (
+        {['Every value shows its source or is marked "Not verified"', 'Documented CRC Handbook correction: acetone density (demo card)', 'No AI-generated data'].map((t) => (
           <li key={t} className="flex items-center gap-1.5"><span aria-hidden className="font-bold text-emerald-700">✓</span>{t}</li>
         ))}
       </ul>

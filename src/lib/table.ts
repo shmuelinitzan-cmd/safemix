@@ -2,10 +2,11 @@
 //   name | formula | MW | BP/MP | density | vapour pressure | waste container |
 //   NFPA (fire, health, reactivity, special) | exposure (eyes, skin, inhalation, ingestion)
 // One function builds the cell text, and the screen, the CSV and the PDF all use it.
-import type { ChemicalCard, Field, FieldKey } from '../types/card.ts'
+import type { ChemicalCard, FieldKey } from '../types/card.ts'
 import { FIELD_LABELS } from '../types/card.ts'
 import { densityForCard, temperatureForCard, vapourPressureForCard, type CardValue } from './units.ts'
 import { shortSource } from './sources.ts'
+import { documentedReference, isNotVerified, NOT_VERIFIED } from './provenance.ts'
 
 export const EMPTY_CELL = '–' // = "No data from approved sources"
 
@@ -41,26 +42,29 @@ export const FOOTNOTES = [
   'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
   'GHS = no NFPA 704 rating in the approved sources; the GHS hazard statements are shown instead (not converted to NFPA numbers).',
   '(SDS) = typed in from the supplier SDS; the SDS is named on the sources page.',
-  '(edited) = value changed by hand; see the sources page.',
+  `${NOT_VERIFIED} = typed in by hand without a named SDS; not verified against an approved source.`,
 ]
 
-// A value as shown in the table: condition and "(edited)" are added when they apply.
-// The chemical name never gets "(edited)": a renamed chemical is not changed safety data,
-// and the change is still listed on the sources page.
-function plain(f: Field | undefined, text = f?.value, markEdited = true): string {
+// A value as shown in the table. Its condition is added when there is one, then a mark for
+// values that did not come from a live source: "(Not verified)", "(SDS)" or the documented
+// reference.
+function plain(card: ChemicalCard, key: FieldKey, text = card.fields[key]?.value): string {
+  const f = card.fields[key]
   if (!f || !text) return EMPTY_CELL
-  const mark = !markEdited || f.origin !== 'user' ? '' : f.source === 'sds' ? ' (SDS)' : ' (edited)'
+  const reference = documentedReference(card, key)
+  const mark = isNotVerified(card, key) ? ` (${NOT_VERIFIED})` : f.source === 'sds' ? ' (SDS)' : reference ? ` (${reference})` : ''
   return text + (f.condition && !text.includes(f.condition) ? ` [applies to: ${f.condition}]` : '') + mark
 }
 
 // Converted values lead, in the table's units, followed by what the source said.
-function withConverted(f: Field | undefined, v: CardValue | undefined): string {
-  if (!f || !v?.shown) return EMPTY_CELL
-  return plain(f, v.converted ? `${v.converted} (converted from ${v.from})` : v.shown)
+function withConverted(card: ChemicalCard, key: FieldKey, v: CardValue | undefined): string {
+  if (!v?.shown) return EMPTY_CELL
+  return plain(card, key, v.converted ? `${v.converted} (converted from ${v.from})` : v.shown)
 }
 
-function temperature(f: Field | undefined): string {
-  return f ? withConverted(f, temperatureForCard(f.value)) : EMPTY_CELL
+function temperature(card: ChemicalCard, key: FieldKey): string {
+  const f = card.fields[key]
+  return f ? withConverted(card, key, temperatureForCard(f.value)) : EMPTY_CELL
 }
 
 // When a card has no NFPA rating at all but has GHS statements, the four NFPA columns are
@@ -68,32 +72,32 @@ function temperature(f: Field | undefined): string {
 export function ghsInsteadOfNfpa(card: ChemicalCard): string | undefined {
   const f = card.fields
   if (f.nfpa_fire || f.nfpa_health || f.nfpa_reactivity || f.nfpa_special || !f.ghs) return undefined
-  return `GHS ${plain(f.ghs)}`
+  return `GHS ${plain(card, 'ghs')}`
 }
 export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 
 export function cellsFor(card: ChemicalCard): Record<string, string> {
   const f = card.fields
-  const g = (k: FieldKey) => f[k]
+  const g = (k: FieldKey) => plain(card, k)
   const vp = f.vapor_pressure && vapourPressureForCard(f.vapor_pressure.value)
   const waste = f.waste_container
   const rel = f.density?.quantity === 'relative_density' ? 'relative density ' : ''
   return {
-    name: plain(g('name'), undefined, false),
-    formula: plain(g('formula')),
-    mw: plain(g('mw')),
-    bpmp: `BP: ${temperature(g('bp'))}\nMP: ${temperature(g('mp'))}`,
-    density: f.density ? withConverted(f.density, ((v) => ({ ...v, shown: rel + v.shown, converted: v.converted && rel + v.converted }))(densityForCard(f.density.value))) : EMPTY_CELL,
-    vp: f.vapor_pressure && vp ? withConverted(f.vapor_pressure, vp) : EMPTY_CELL,
-    waste: waste ? plain(waste) + (waste.status === 'pending' && waste.origin === 'rule' ? ' †' : '') : EMPTY_CELL,
-    fire: plain(g('nfpa_fire')),
-    health: plain(g('nfpa_health')),
-    reactivity: plain(g('nfpa_reactivity')),
-    special: plain(g('nfpa_special')),
-    eyes: plain(g('exp_eyes')),
-    skin: plain(g('exp_skin')),
-    inhalation: plain(g('exp_inhalation')),
-    ingestion: plain(g('exp_ingestion')),
+    name: g('name') + (card.not_verified ? `\n${card.not_verified}` : ''),
+    formula: g('formula'),
+    mw: g('mw'),
+    bpmp: `BP: ${temperature(card, 'bp')}\nMP: ${temperature(card, 'mp')}`,
+    density: f.density ? withConverted(card, 'density', ((v) => ({ ...v, shown: rel + v.shown, converted: v.converted && rel + v.converted }))(densityForCard(f.density.value))) : EMPTY_CELL,
+    vp: f.vapor_pressure && vp ? withConverted(card, 'vapor_pressure', vp) : EMPTY_CELL,
+    waste: waste ? g('waste_container') + (waste.status === 'pending' && waste.origin === 'rule' ? ' †' : '') : EMPTY_CELL,
+    fire: g('nfpa_fire'),
+    health: g('nfpa_health'),
+    reactivity: g('nfpa_reactivity'),
+    special: g('nfpa_special'),
+    eyes: g('exp_eyes'),
+    skin: g('exp_skin'),
+    inhalation: g('exp_inhalation'),
+    ingestion: g('exp_ingestion'),
   }
 }
 
@@ -123,7 +127,7 @@ export interface SourceRow {
   url: string
 }
 
-const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: 'Entered by hand', app: 'Rule in SafeMix', sds: 'Supplier SDS' }
+const SOURCE_NAMES: Record<string, string> = { pubchem: 'PubChem', niosh: 'NIOSH', cameo: 'CAMEO', user: `${NOT_VERIFIED} (entered by hand)`, app: 'Rule in SafeMix', sds: 'Supplier SDS' }
 const FIELD_ORDER: FieldKey[] = ['name', 'formula', 'mw', 'bp', 'mp', 'density', 'vapor_pressure', 'waste_container',
   'nfpa_fire', 'nfpa_health', 'nfpa_reactivity', 'nfpa_special', 'ghs', 'exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion']
 
@@ -144,9 +148,12 @@ export function sourceRows(cards: ChemicalCard[]): SourceRow[] {
         f.source_value ? `Source had: ${f.source_value}` : undefined,
         f.origin === 'rule' && f.status === 'pending' ? 'Rule-based suggestion, not yet confirmed.' : undefined,
       ].filter(Boolean).join(' ')
+      const reference = documentedReference(card, k)
+      const sourceName = reference ?? (isNotVerified(card, k) && f.source === 'sds' ? `${NOT_VERIFIED} (SDS not named)` : `${SOURCE_NAMES[f.source]}${via}`)
       out.push({
         chemical, field: FIELD_LABELS[k], value: f.value.replace(/\n/g, ' / '),
-        source: `${SOURCE_NAMES[f.source]}${via}`, detail, retrieved: f.retrieved_at, url: f.source_url,
+        // a hand-entered value gets no link: an older source's link would not back it
+        source: sourceName, detail, retrieved: f.retrieved_at, url: f.source === 'user' ? '' : f.source_url,
       })
     }
   }

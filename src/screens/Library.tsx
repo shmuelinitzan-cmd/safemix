@@ -5,6 +5,7 @@ import type { ImportPlan } from '../lib/library-io.ts'
 import { isFullyApproved, matches } from '../lib/cards.ts'
 import NfpaDiamond from '../components/NfpaDiamond.tsx'
 import Intro from '../components/Intro.tsx'
+import { isNotVerified, NOT_VERIFIED } from '../lib/provenance.ts'
 
 interface Props {
   cards: ChemicalCard[] | null
@@ -105,10 +106,12 @@ export default function Library(p: Props) {
               <NfpaDiamond card={c} size={64} />
               <span>
                 <span className="block font-semibold">{c.fields.name?.value}</span>
-                <span className="block text-sm text-slate-600">{c.fields.formula?.value ?? '—'} · CAS {c.cas?.value ?? '—'}</span>
+                {isNotVerified(c, 'name') && <span className="block text-xs text-amber-800">Name: {NOT_VERIFIED}</span>}
+                <span className="block text-sm text-slate-600">{c.fields.formula?.value ?? '—'}{isNotVerified(c, 'formula') ? ` (${NOT_VERIFIED})` : ''} · CAS {c.cas?.value ?? '—'}</span>
                 <span className={`mt-1 inline-block rounded px-1.5 text-xs ${isFullyApproved(c) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                   {isFullyApproved(c) ? 'Approved' : 'Needs review'}
                 </span>
+                {c.not_verified && <span className="ml-1 mt-1 inline-block rounded bg-amber-100 px-1.5 text-xs text-amber-800">{c.not_verified}</span>}
               </span>
             </button>
           </li>

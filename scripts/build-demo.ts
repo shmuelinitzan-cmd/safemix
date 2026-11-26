@@ -1,8 +1,8 @@
-// Builds src/data/demo-cards.json from the review snapshot Nitzan checked by hand.
+// Builds src/data/demo-cards.json from a review snapshot.
 // Usage: node scripts/build-demo.ts <path-to-review.json>
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { approveCard, applyCorrections, cardFromLookup } from '../src/lib/cards.ts'
-import { MANUAL_CORRECTIONS } from '../src/data/manual-corrections.ts'
+import { DEMO_NOT_VERIFIED, MANUAL_CORRECTIONS } from '../src/data/manual-corrections.ts'
 import { attachStructure } from '../src/lib/structure.ts'
 import type { ChemicalCard } from '../src/types/card.ts'
 
@@ -21,6 +21,8 @@ const cards: ChemicalCard[] = await Promise.all(Object.values(snapshot).map(asyn
   const approved = approveCard(await attachStructure(corrected)) // organic cards get the PubChem picture
   // The waste container is only a rule-based suggestion: it stays pending until the lab confirms it.
   if (approved.fields.waste_container) approved.fields.waste_container.status = 'pending'
+  const mark = DEMO_NOT_VERIFIED[approved.cas?.value ?? '']
+  if (mark) approved.not_verified = mark
   return approved
 }))
 

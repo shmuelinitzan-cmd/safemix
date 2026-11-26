@@ -142,12 +142,23 @@ export const GHS_ROUTES: Record<'exp_eyes' | 'exp_skin' | 'exp_inhalation' | 'ex
   exp_ingestion: ['H300', 'H301', 'H302', 'H303', 'H304', 'H305'],
 }
 const GHS_MIN_SHARE = 50
+const ECHA_NAME = 'European Chemicals Agency (ECHA)'
+const sourceName = (record: Json, info: Json): string | undefined =>
+  record.Reference?.find((r: Json) => r.ReferenceNumber === info.ReferenceNumber)?.SourceName
+
+// Only the ECHA entry is a summary of notifications, so only its note mentions notifiers.
+function ghsOrigin(record: Json, info: Json): string {
+  const name = sourceName(record, info)
+  return name === ECHA_NAME
+    ? 'reported by at least half of the ECHA notifiers, or listed with no percentage'
+    : `from ${name ?? 'a source PubChem does not name'}`
+}
 
 export interface GhsStatement { code: string; text: string; signal?: 'Danger' | 'Warning' }
 export function ghsStatements(record: Json): { info: Json; statements: GhsStatement[] } | undefined {
   const infos: Json[] = (findSection(record.Section, 'GHS Classification')?.Information ?? []).filter((i: Json) => i.Name === 'GHS Hazard Statements')
   if (!infos.length) return
-  const isEcha = (i: Json) => record.Reference?.find((r: Json) => r.ReferenceNumber === i.ReferenceNumber)?.SourceName === 'European Chemicals Agency (ECHA)'
+  const isEcha = (i: Json) => sourceName(record, i) === ECHA_NAME
   const info = infos.find(isEcha) ?? infos[0]
   const statements: GhsStatement[] = []
   for (const line of info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []) {
@@ -166,7 +177,7 @@ function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date:
   if (!hits.length) return
   const f = makeField(record, cid, 'GHS Classification', g.info, [...new Set(hits.map((h) => h.text))].join('; '), date)
   f.condition = undefined
-  f.note = 'GHS hazard statements (no ICSC symptoms for this route in PubChem).'
+  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)} (no ICSC symptoms for this route in PubChem).`
   return f
 }
 
@@ -181,7 +192,7 @@ function ghsSummary(record: Json, cid: number, date: string): Field | undefined 
   const list = [...new Set(g.statements.map((s) => s.text))].join(' · ')
   const f = makeField(record, cid, 'GHS Classification', g.info, signal ? `${signal}: ${list}` : list, date)
   f.condition = undefined
-  f.note = 'GHS hazard statements reported by at least half of the notifiers.'
+  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)}.`
   return f
 }
 

@@ -18,7 +18,7 @@ export function cardFromLookup(r: PubChemResult): ChemicalCard {
   }
 }
 
-// Where a hand-entered value comes from. Without one it is "Entered by hand".
+// Where a hand-entered value comes from. Without one it is shown as "Not verified".
 export interface SdsCitation {
   citation: string // e.g. "Sigma-Aldrich SDS 438073, rev. 2024-03-12"
   url?: string // https link to that SDS, when there is one
@@ -105,7 +105,8 @@ export function matches(card: ChemicalCard, query: string): boolean {
 // NFPA 704 diamond: colours are fixed by the standard (blue health, red fire, yellow reactivity).
 export const NFPA_COLORS = { health: '#2563eb', fire: '#dc2626', reactivity: '#facc15', special: '#ffffff' } as const
 
-export type CorrectionTable = Record<string, Partial<Record<FieldKey, { value: string; note: string }>>>
+// `reference` names the book a correction was checked against, when that is documented.
+export type CorrectionTable = Record<string, Partial<Record<FieldKey, { value: string; note: string; reference?: string }>>>
 
 // Manual corrections by CAS, each made by Nitzan after checking a handbook.
 export function applyCorrections(card: ChemicalCard, table: CorrectionTable, date: string): ChemicalCard {

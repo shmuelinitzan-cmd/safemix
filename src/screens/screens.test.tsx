@@ -79,7 +79,7 @@ describe('library screen', () => {
   it('has the intro: one headline and the three points', () => {
     const html = renderToStaticMarkup(<Library cards={cards} {...libProps} />)
     expect(html).toContain('Search a chemical, get a cited lab safety card')
-    for (const t of ['Every value cites its source', 'Demo values verified against the CRC Handbook', 'No AI-generated data']) expect(html).toContain(t)
+    for (const t of ['Every value shows its source or is marked "Not verified"', 'Documented CRC Handbook correction: acetone density (demo card)', 'No AI-generated data']) expect(html).toContain(t.replace(/"/g, '&quot;'))
     expect(html.match(/<h2/g)).toHaveLength(1) // just the headline; the library itself has no other heading here
   })
   it('enables New experiment, Import and Export all; Compatibility check waits for phase 2', () => {

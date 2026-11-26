@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ChemicalCard, FieldKey } from '../types/card.ts'
 import { approveCard, editField, isFullyApproved, makeSolutionCard, type SdsCitation } from '../lib/cards.ts'
 import FieldRow from '../components/FieldRow.tsx'
+import { documentedReference, isNotVerified, NOT_VERIFIED } from '../lib/provenance.ts'
 import NfpaDiamond from '../components/NfpaDiamond.tsx'
 import StructureImage from '../components/StructureImage.tsx'
 
@@ -55,7 +56,9 @@ export default function CardScreen({ card: initial, saved, onSave, onDelete, onB
         )}
         <div>
           <h2 className="text-2xl font-bold">{card.fields.name?.value ?? 'Unnamed chemical'}</h2>
-          <p className="text-slate-600">{card.fields.formula?.value}</p>
+          {isNotVerified(card, 'name') && <p className="text-xs font-medium text-amber-800">Name: {NOT_VERIFIED}</p>}
+          <p className="text-slate-600">{card.fields.formula?.value}{isNotVerified(card, 'formula') && <span className="text-xs font-medium text-amber-800"> ({NOT_VERIFIED})</span>}</p>
+          {card.not_verified && <span className="mr-2 mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-900">{card.not_verified}</span>}
           {card.concentration && <span className="mt-1 inline-block rounded bg-sky-100 px-2 py-0.5 text-sm text-sky-900">Solution: {card.concentration}</span>}
         </div>
       </div>
@@ -72,7 +75,8 @@ export default function CardScreen({ card: initial, saved, onSave, onDelete, onB
           <section key={b.title} className="rounded-lg border border-slate-200 bg-white p-4">
             <h3 className="mb-1 font-semibold text-emerald-800">{b.title}</h3>
             {b.title === 'NFPA 704' && <div className="mb-2"><NfpaDiamond card={card} /></div>}
-            {b.keys.map((k) => <FieldRow key={k} k={k} field={card.fields[k]} onEdit={edit(k)} />)}
+            {b.keys.map((k) => <FieldRow key={k} k={k} field={card.fields[k]} onEdit={edit(k)}
+              notVerified={isNotVerified(card, k)} reference={documentedReference(card, k)} />)}
           </section>
         ))}
       </div>

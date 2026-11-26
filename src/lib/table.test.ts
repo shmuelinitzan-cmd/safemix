@@ -18,12 +18,12 @@ describe('column order (the lab form)', () => {
 describe('cells', () => {
   const a = cellsFor(by('67-64-1'))
   it('puts BP and MP in one cell', () => expect(a.bpmp).toBe('BP: 56.08 °C\nMP: -94.9 °C'))
-  it('marks the hand-corrected density', () => expect(a.density).toBe('0.7902 g/mL at 20 °C (edited)'))
+  it('names the documented reference on the hand-corrected density', () => expect(a.density).toBe('0.7902 g/mL at 20 °C (CRC Handbook 107th ed.)'))
   it('vapour pressure: first value, converted temperature', () => expect(a.vp).toBe('180 mmHg at 20 °C (converted from 68 °F)'))
-  it('never marks the chemical name as edited', () => {
+  it('marks a name typed by hand as not verified', () => {
     const c = by('64-19-7')
     const f = { ...c, fields: { ...c.fields, name: { ...c.fields.name!, value: 'Acetic acid (glacial)', origin: 'user' as const } } }
-    expect(cellsFor(f).name).toBe('Acetic acid (glacial)')
+    expect(cellsFor(f).name).toBe('Acetic acid (glacial) (Not verified)')
   })
   it('shows g/cu cm densities in g/mL, number untouched', () => expect(cellsFor(by('64-19-7')).density).toMatch(/^1\.0446 g\/mL at 25 °C/))
   it('marks the unconfirmed waste container', () => expect(a.waste).toBe('organic †'))
@@ -74,7 +74,8 @@ describe('sources list', () => {
     const d = rows.find((r) => r.field.startsWith('Density'))!
     expect(d.detail).toContain('Corrected after manual check against CRC Handbook 107th ed.')
     expect(d.detail).toContain('Source had: 0.7845 g/cu cm at 20 °C')
-    expect(d.source).toBe('Entered by hand')
+    expect(d.source).toBe('CRC Handbook 107th ed.')
+    expect(d.url).toBe('')
   })
   it('names the original supplier in full', () => {
     expect(rows.find((r) => r.field === 'Boiling point (°C)')!.source).toContain('Hazardous Substances Data Bank (HSDB)')

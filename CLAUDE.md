@@ -1,8 +1,10 @@
 # SafeMix
 
-SafeMix is a browser-only web app (Vite + React + TypeScript + Tailwind, hosted on GitHub Pages) for lab preparation. A user searches a chemical by name or CAS and gets one compact card with exactly the columns of the lab's chemical table (name, formula, MW, BP, MP, density, vapour pressure, waste container, NFPA 704, exposure hazards by route), each value cited from an approved source. Cards go into a library and experiment tables, can be exported, and later are cross-checked in a compatibility matrix. **The card holds only those columns; the 16-section SDS format is out of scope (SPEC.md v2).** First target user: an academic chemistry / chemical-engineering teaching lab.
+SafeMix: browser-only lab chemical card app (Vite, React, TypeScript, Tailwind, GitHub Pages).
 
-**Read [PROGRESS.md](PROGRESS.md) first: it says what is done and what is waiting. The full spec is in [SPEC.md](SPEC.md). Read it before starting any work.**
+**Before starting any work, read [PROGRESS.md](PROGRESS.md) (what is done and what is waiting), then [SPEC.md](SPEC.md) (full spec).**
+
+Cards hold only the lab table's columns, not the 16-section SDS format.
 
 ## Core principle: grounded AI only (NON-NEGOTIABLE)
 
@@ -20,11 +22,15 @@ The AI never creates safety data. It only reorganizes, quotes and explains data 
 
 Not in code, not in demo data, not in tests. If a value is not available from an approved source (see the table in SPEC.md), leave it empty and tell the user (Nitzan) explicitly which value is missing. Never fill a gap from general knowledge, memory or guesswork, even "obvious" values.
 
+## Rule: unverified means "Not verified"
+
+If a value can't be verified against an approved source, show it as 'Not verified' in the app and docs. Never present it as verified.
+
 ## Rule: one phase at a time
 
 Work on one phase of the build plan (SPEC.md, "Build phases") at a time. When a phase is finished, stop and wait for Nitzan's explicit approval before starting the next one.
 
-Also: before pushing anything to GitHub, ask Nitzan for the repository name.
+The GitHub repository is `shmuelinitzan-cmd/safemix`. Still ask Nitzan before every push.
 
 ## About the user
 

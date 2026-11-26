@@ -83,6 +83,9 @@ export interface ChemicalCard {
   // pure-compound card it was made from. Values of the pure compound are never copied over.
   concentration?: string
   parent_id?: string
+  // Something about this card that could not be verified, e.g. "Concentration not verified".
+  // Shown wherever the card appears (card, library, experiment table, PDF, CSV).
+  not_verified?: string
 }
 
 export const NO_DATA_LABEL = 'No data from approved sources'

@@ -4,6 +4,8 @@ import { SafeMixDB, seedDemo } from './db.ts'
 import demo from '../data/demo-cards.json'
 import type { ChemicalCard } from '../types/card.ts'
 import { approveCard, editField, matches } from './cards.ts'
+import { cellsFor, toCsv } from './table.ts'
+import { exportLibrary, parseLibraryFile } from './library-io.ts'
 
 describe('storage', () => {
   it('seeds the 5 demo cards once', async () => {
@@ -13,6 +15,34 @@ describe('storage', () => {
     await d.cards.delete('cas-67-64-1')
     expect(await seedDemo(d)).toBe(false) // a deleted demo card is not brought back
     expect(await d.cards.count()).toBe(4)
+  })
+})
+
+describe('"not verified" mark', () => {
+  const cards = demo as unknown as ChemicalCard[]
+  const peroxide = cards.find((c) => c.cas?.value === '7722-84-1')!
+  it('is on the hydrogen peroxide demo card only', () => {
+    expect(cards.filter((c) => c.not_verified).map((c) => c.id)).toEqual([peroxide.id])
+    expect(peroxide.not_verified).toBe('Concentration not verified')
+  })
+  it('is added to a card stored before the mark existed, without changing its values', async () => {
+    const d = new SafeMixDB('test-mark')
+    await seedDemo(d, cards.map((c) => ({ ...c, not_verified: undefined })))
+    await seedDemo(d)
+    expect(await d.cards.get(peroxide.id)).toEqual(peroxide)
+  })
+  it('does not bring back a deleted card', async () => {
+    const d = new SafeMixDB('test-mark-deleted')
+    await seedDemo(d)
+    await d.cards.delete(peroxide.id)
+    await seedDemo(d)
+    expect(await d.cards.get(peroxide.id)).toBeUndefined()
+  })
+  it('stays through approval, tables and library export / import', () => {
+    expect(approveCard(peroxide).not_verified).toBe(peroxide.not_verified)
+    expect(cellsFor(peroxide).name).toContain('Concentration not verified')
+    expect(toCsv([peroxide])).toContain('Concentration not verified')
+    expect(parseLibraryFile(exportLibrary([peroxide], [])).cards[0].not_verified).toBe(peroxide.not_verified)
   })
 })
 
