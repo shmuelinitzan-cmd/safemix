@@ -16,6 +16,9 @@ export interface Field {
   condition?: string
   // 'relative_density' = a bare number relative to water (specific gravity); it has no unit.
   quantity?: 'relative_density'
+  // A source entry the app could not read as expected (e.g. an NFPA rating "1-2"). The text is
+  // kept as the source wrote it and shown as "Not verified".
+  unverified?: boolean
   // Set when a person changed or corrected the value: why, and what the source had said.
   note?: string
   source_value?: string
@@ -87,5 +90,8 @@ export interface ChemicalCard {
   // Shown wherever the card appears (card, library, experiment table, PDF, CSV).
   not_verified?: string
 }
+
+// The GHS value when the source's entry has no hazard statement and says "Not Classified".
+export const GHS_NOT_CLASSIFIED = 'Not classified (no GHS hazard)'
 
 export const NO_DATA_LABEL = 'No data from approved sources'

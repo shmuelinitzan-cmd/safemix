@@ -1,7 +1,8 @@
 // Experiment table -> print-ready PDF: A4 landscape, the lab form's columns, and the
 // sources for every value on the last pages. jsPDF is loaded only when the user exports.
+import type { CellInput } from 'jspdf-autotable'
 import type { ChemicalCard } from '../types/card.ts'
-import { COLUMNS, cellsFor, FOOTNOTES, ghsInsteadOfNfpa, NFPA_IDS, sourceRows } from './table.ts'
+import { COLUMNS, cellsFor, FOOTNOTES, ghsBesideNfpa, ghsInsteadOfNfpa, NFPA_IDS, sourceRows } from './table.ts'
 import { NOT_VERIFIED } from './provenance.ts'
 
 export const DISCLAIMER = 'Draft for educational use. Verify against the supplier SDS before use.'
@@ -17,7 +18,7 @@ export function pdfSafe(s: string): string {
 
 // The NFPA columns are too narrow for the words, so in the PDF they get a "*" instead.
 export const NFPA_STAR_NOTE = `* in the NFPA 704 columns = ${NOT_VERIFIED}.`
-export const PDF_INTRO = `Sources are listed on the last pages. Values marked "${NOT_VERIFIED}" (* in the NFPA columns) have no verified source.`
+export const PDF_INTRO = `Sources are listed on the last pages. Values marked "${NOT_VERIFIED}" (* in the NFPA columns) were not verified.`
 export function pdfCell(columnId: string, text: string): string {
   const mark = ` (${NOT_VERIFIED})`
   return NFPA_IDS.includes(columnId) && text.endsWith(mark) ? `${text.slice(0, -mark.length)}*` : text
@@ -45,15 +46,22 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
               : { content: pdfSafe(c.label), rowSpan: 2 }),
     COLUMNS.filter((c) => c.group).map((c) => ({ content: c.label, styles: { halign: 'center' as const } })),
   ]
-  const body = cards.map((card) => {
+  const ghsStyles = { halign: 'left' as const, fontStyle: 'normal' as const, fontSize: 5.5, fillColor: [255, 247, 237] as [number, number, number] }
+  const body = cards.flatMap((card): CellInput[][] => {
     const cells = cellsFor(card)
     for (const id of NFPA_IDS) cells[id] = pdfCell(id, cells[id])
     const ghs = ghsInsteadOfNfpa(card)
-    if (!ghs) return COLUMNS.map((c) => pdfSafe(cells[c.id]))
+    const below = ghsBesideNfpa(card)
+    // an NFPA rating that could not be read: a second line with the GHS cell under the NFPA columns
+    if (below) return [
+      COLUMNS.map((c) => (NFPA_IDS.includes(c.id) ? pdfSafe(cells[c.id]) : { content: pdfSafe(cells[c.id]), rowSpan: 2 })),
+      [{ content: pdfSafe(below), colSpan: NFPA_IDS.length, styles: ghsStyles }],
+    ]
+    if (!ghs) return [COLUMNS.map((c) => pdfSafe(cells[c.id]))]
     // no NFPA rating: one merged cell with the GHS statements across the four NFPA columns
-    return COLUMNS.filter((c) => !NFPA_IDS.includes(c.id) || c.id === 'fire').map((c) => c.id === 'fire'
-      ? { content: pdfSafe(ghs), colSpan: NFPA_IDS.length, styles: { halign: 'left' as const, fontStyle: 'normal' as const, fontSize: 5.5, fillColor: [255, 247, 237] as [number, number, number] } }
-      : pdfSafe(cells[c.id]))
+    return [COLUMNS.filter((c) => !NFPA_IDS.includes(c.id) || c.id === 'fire').map((c) => c.id === 'fire'
+      ? { content: pdfSafe(ghs), colSpan: NFPA_IDS.length, styles: ghsStyles }
+      : pdfSafe(cells[c.id]))]
   })
   const widths: Record<string, number> = { name: 22, formula: 15, mw: 12, bpmp: 25, density: 20, vp: 25, waste: 17, fire: 10, health: 12, reactivity: 16, special: 12 }
 

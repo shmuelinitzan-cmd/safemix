@@ -26,6 +26,13 @@ Not in code, not in demo data, not in tests. If a value is not available from an
 
 If a value can't be verified against an approved source, show it as 'Not verified' in the app and docs. Never present it as verified.
 
+## Definition of done
+
+- A change is done only when `npm test`, `npm run lint` and `npm run build` pass.
+- New or changed behaviour gets a test. A bug fix gets a test that failed before the fix.
+- Tests never contact the network. The live check (`npm run test:live`) is run by hand.
+- Never mark a test as expected-fail (`it.fails`) to make a run green without telling Nitzan.
+
 ## Rule: one phase at a time
 
 Work on one phase of the build plan (SPEC.md, "Build phases") at a time. When a phase is finished, stop and wait for Nitzan's explicit approval before starting the next one.

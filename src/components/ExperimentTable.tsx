@@ -1,5 +1,6 @@
+import { Fragment } from 'react'
 import type { ChemicalCard } from '../types/card.ts'
-import { COLUMNS, cellsFor, FOOTNOTES, ghsInsteadOfNfpa, NFPA_IDS } from '../lib/table.ts'
+import { COLUMNS, cellsFor, FOOTNOTES, ghsBesideNfpa, ghsInsteadOfNfpa, NFPA_IDS } from '../lib/table.ts'
 
 interface Props {
   cards: ChemicalCard[]
@@ -47,10 +48,14 @@ export default function ExperimentTable({ cards, onMove, onRemove }: Props) {
             {cards.map((card, i) => {
               const cells = cellsFor(card)
               const ghs = ghsInsteadOfNfpa(card)
+              const below = ghsBesideNfpa(card) // a second line under the NFPA columns
+              const rows = below ? 2 : undefined
+              const ghsCell = `${LINES} bg-orange-50 px-2 py-1 text-[11px] text-orange-950`
               return (
-                <tr key={card.id} className="align-top">
+                <Fragment key={card.id}>
+                <tr className="align-top">
                   {edit && (
-                    <td className={`whitespace-nowrap ${LINES} px-1 py-1 text-center`}>
+                    <td rowSpan={rows} className={`whitespace-nowrap ${LINES} px-1 py-1 text-center`}>
                       <button aria-label={`Move ${card.fields.name?.value} up`} disabled={i === 0} onClick={() => onMove?.(i, -1)} className="px-1 disabled:opacity-30">↑</button>
                       <button aria-label={`Move ${card.fields.name?.value} down`} disabled={i === cards.length - 1} onClick={() => onMove?.(i, 1)} className="px-1 disabled:opacity-30">↓</button>
                       <button aria-label={`Remove ${card.fields.name?.value} from this table`} onClick={() => onRemove?.(i)} className="px-1 text-red-700">×</button>
@@ -59,15 +64,17 @@ export default function ExperimentTable({ cards, onMove, onRemove }: Props) {
                   {COLUMNS.map((c) => {
                     if (ghs && NFPA_IDS.includes(c.id)) {
                       if (c.id !== 'fire') return null
-                      return <td key="ghs" colSpan={NFPA_IDS.length} className={`${LINES} bg-orange-50 px-2 py-1 text-[11px] text-orange-950`}>{ghs}</td>
+                      return <td key="ghs" colSpan={NFPA_IDS.length} className={ghsCell}>{ghs}</td>
                     }
                     return (
-                      <td key={c.id} className={`whitespace-pre-line ${LINES} px-2 py-1 ${MIN_WIDTH[c.id] ?? ''} ${c.group === 'NFPA 704' ? 'text-center font-bold' : ''} ${c.id === 'name' ? `${PINNED} z-10 bg-white` : ''}`}>
+                      <td key={c.id} rowSpan={NFPA_IDS.includes(c.id) ? undefined : rows} className={`whitespace-pre-line ${LINES} px-2 py-1 ${MIN_WIDTH[c.id] ?? ''} ${c.group === 'NFPA 704' ? 'text-center font-bold' : ''} ${c.id === 'name' ? `${PINNED} z-10 bg-white` : ''}`}>
                         {cells[c.id]}
                       </td>
                     )
                   })}
                 </tr>
+                {below && <tr className="align-top"><td colSpan={NFPA_IDS.length} className={ghsCell}>{below}</td></tr>}
+                </Fragment>
               )
             })}
           </tbody>

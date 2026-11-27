@@ -1,0 +1,8 @@
+CID: 180
+URL: https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/180/JSON
+Retrieved: 2026-11-27
+Original-SHA-256: d259e6dfbef9e2e196f3ba3fc33f12f6dca32bf0a36ae296efd57377f48e63d6
+Original-bytes: 1900777
+Trimmed-SHA-256: 808abf98a93bd8add03ac3d93ab4db27c20bca3e899670e248740f9622399d86
+Trimmed-bytes: 301765
+Trimmed: whole sections removed, no remaining text changed. Kept: Molecular Formula; Molecular Weight; Boiling Point; Melting Point; Density; Vapor Pressure; NFPA Hazard Classification; Signs and Symptoms; GHS Classification; CAS (and the sections that contain them).
