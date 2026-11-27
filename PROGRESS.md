@@ -61,7 +61,12 @@ Last updated: 2026-11-26
   - **Fixes (2026-11-27, approved by Nitzan, not pushed):** bugs 1–3 (a temperature or pressure range that can't be converted as a whole is left as the source wrote it, including its measuring temperature; the same for a measuring-temperature range with a °F end, in vapour pressure and density) and bug 6 (an empty or incomplete record is an error, so no card). Ranges are recognised when joined by a dash or "to". Display of the demo cards is unchanged.
   - Now 323 tests: 320 pass, 3 expected fail (bugs 4, 5, 7). Lint and build pass. The counts and bug list above describe the state before the fixes.
   - Open GitHub issues: #3 (503 message), #4 (kelvin), #5 (°F without "at"), #6 (decide: several CIDs, no timeout).
-  - Later stages (each needs Nitzan's go-ahead): 2 = molecular weight and parsing; 3 = real-record fixtures and live check; then add lint and tests to `deploy.yml` as a separate commit (ask before any push).
+  - Later stages (each needs Nitzan's go-ahead): 3 = real-record fixtures and live check; then add lint and tests to `deploy.yml` as a separate commit (ask before any push).
+- **Test plan, stage 2 (2026-11-27, local branch `tests`, not pushed).**
+  - New tests for molecular weight and formula parsing (`src/lib/mw.test.ts`) and PubChem record parsing (`src/lib/pubchem.test.ts`), with fake records. App code unchanged.
+  - 429 tests: 418 pass, 11 expected fail (3 from stage 1, 8 new). Pass with the network blocked; lint and build pass.
+  - New bugs, not fixed (waiting for Nitzan): (8) a value made only of spaces is accepted for MW, exposure symptoms (which also blocks the GHS fallback) and CAS; (9) NFPA "1.5" or "1-2" is read as 1; (10) the table, CSV and PDF cells drop the MW unit; (11) formula parsing ignores group and hydrate multipliers. Whether real PubChem data triggers 8–11 is not verified.
+  - Current behaviour, pinned by a test: a combined GHS code ("H302+H332") or a "<" share is dropped without a notice. Whether PubChem uses these forms there is not verified.
 
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
