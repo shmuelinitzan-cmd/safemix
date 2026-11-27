@@ -40,7 +40,7 @@ These rules are written in the code and covered by tests:
 3. **Fixed rules for choosing a value:**
    - Vapour pressure: the value measured closest to 20 °C.
    - Boiling point, melting point and density: the first value already in the card's unit.
-4. **GHS as a fallback, never as a conversion.** Some chemicals have no NFPA rating in any approved source. For those, SafeMix shows GHS hazard statements instead: from the ECHA summary, those that at least half of the notifiers reported or that have no percentage. If there is no ECHA entry, it uses another GHS entry and the card names that source. It does not translate GHS into NFPA numbers, because the two systems rate hazards differently.
+4. **GHS as a fallback, never as a conversion.** Some chemicals have no NFPA rating in any approved source. For those, SafeMix shows GHS hazard statements in place of the NFPA columns (where a rating exists, the statements are shown under it): from the ECHA summary, those that at least half of the notifiers reported or that have no percentage. If there is no ECHA entry, it uses another GHS entry and the card names that source. It does not translate GHS into NFPA numbers, because the two systems rate hazards differently.
 5. **Waste container by a documented rule.** The suggestion is based on the formula (halogen in an organic compound → halogenated organic, and so on). It stays marked as a suggestion until a person confirms it.
 6. **A person approves every card** before it counts as reviewed.
 
@@ -61,7 +61,7 @@ I used SafeMix to rebuild the chemical table for a real organic chemistry lab: i
 |---|---|
 | [PubChem](https://pubchem.ncbi.nlm.nih.gov/) (NIH), PUG REST / PUG View | All card fields, live |
 | ICSC (ILO-WHO), via PubChem | Exposure symptoms by route |
-| ECHA C&L notifications, via PubChem | GHS hazard statements, used only where ICSC or NFPA data is missing |
+| ECHA C&L notifications, via PubChem | GHS hazard statements: in the experiment table for every chemical that has them; in the exposure columns where ICSC symptoms are missing |
 | HSDB, CAMEO Chemicals (NOAA), via PubChem | Physical properties, NFPA 704 |
 | Supplier SDS, typed in by the user | Optional, for gaps and for solutions |
 | CRC Handbook | Manual reference, not included in the app. The only documented correction is the acetone density in the demo cards |

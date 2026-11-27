@@ -40,7 +40,7 @@ export const FOOTNOTES = [
   `${EMPTY_CELL} = No data from approved sources.`,
   '† = Rule-based suggestion, confirm with lab instructions.',
   'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
-  'GHS = the GHS hazard statements (not converted to NFPA numbers). Shown instead of the NFPA columns when the approved sources have no NFPA 704 rating, and below them when a rating could not be read.',
+  'GHS = the GHS hazard statements (not converted to NFPA numbers). Shown under the NFPA ratings, or in place of the NFPA columns when the approved sources have no NFPA 704 rating.',
   '(SDS) = typed in from the supplier SDS; the SDS is named on the sources page.',
   `${NOT_VERIFIED} = typed in by hand without a named SDS, or a source entry SafeMix could not read (shown as written).`,
 ]
@@ -82,11 +82,10 @@ function ghsText(card: ChemicalCard): string {
 }
 export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 
-// When an NFPA rating could not be read, the NFPA columns keep their text AND the GHS cell is
-// shown with them (on a second line under those columns), so no hazard drops out of the table.
+// When a card has NFPA data, the GHS cell is shown WITH it, on a second line under the NFPA
+// columns. NFPA numbers do not carry hazards such as cancer, so the table must keep both.
 export function ghsBesideNfpa(card: ChemicalCard): string | undefined {
-  const f = card.fields
-  if (!f.ghs || ![f.nfpa_fire, f.nfpa_health, f.nfpa_reactivity].some((r) => r?.unverified)) return undefined
+  if (!card.fields.ghs || ghsInsteadOfNfpa(card)) return undefined
   return ghsText(card)
 }
 
@@ -120,10 +119,10 @@ const csvCell = (s: string) => (/[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"
 
 // Empty cells stay empty in the CSV (not "–"), so a spreadsheet sees a real blank.
 export function toCsv(cards: ChemicalCard[]): string {
-  const header = [...COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label)), 'GHS hazards (when no NFPA rating, or one could not be read)']
+  const header = [...COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label)), 'GHS hazards']
   const rows = cards.map((card) => {
     const cells = cellsFor(card)
-    const ghs = ghsInsteadOfNfpa(card) ?? ghsBesideNfpa(card)
+    const ghs = ghsInsteadOfNfpa(card) ?? ghsBesideNfpa(card) // every GHS summary has a cell
     return [...COLUMNS.map((c) => (cells[c.id] === EMPTY_CELL ? '' : cells[c.id].replace(/\n/g, '; '))), ghs ?? ''].map(csvCell)
   })
   // BOM so Excel reads the degree signs correctly.
