@@ -54,6 +54,12 @@ Last updated: 2026-11-26
   - 163 tests, type check, lint and build pass. Checked in headless Chrome: at 390 and 320 px, no text in the opened "Source details" is cut off on six cards, and the name column stays visible across the table scroll; desktop looks right. Not checked on a physical phone or in Safari.
 - **README screenshots retaken (2026-11-26).** Same file names and pixel sizes, from a new Chrome profile. Library, card and PDF images use only the five demo cards; the table image adds iodoform (live PubChem lookup) so a GHS row shows. Its waste suggestion was kept unconfirmed (†) in that test profile. For the table image only, the page width limit was lifted to keep the old framing.
 
+- **Test plan, stage 1 (2026-11-27, local branch `tests`, not pushed).**
+  - New tests for unit conversions (`src/lib/units.test.ts`) and retrieval with a fake network (`src/lib/fetch.test.ts`). App code unchanged.
+  - 295 tests: 288 pass, 7 are "expected fail" (known bugs, `it.fails`, not fixed; waiting for Nitzan's decision). Tests also pass with the network blocked; lint and build (with type check) pass.
+  - Bugs: (1) and (2) a range repeating °F ("to" or dash) is half-converted; (3) the same for a kPa range in vapour pressure; (4) vapour pressure ignores temperatures in K when picking the value nearest 20 °C; (5) density: a °F measuring temperature without "at" is not converted; (6) an empty PubChem record is accepted; (7) any HTTP error reads "could not find" (GitHub issue #3). All use made-up inputs; whether real PubChem text triggers 1–6 is not verified.
+  - Later stages (each needs Nitzan's go-ahead): 2 = molecular weight and parsing; 3 = real-record fixtures and live check; then add lint and tests to `deploy.yml` as a separate commit (ask before any push).
+
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
 2. **Export the Lab 1 PDF and compare** with the hand-filled prep report (dated 5/11/26). The "Lab 1 - Iodoform + alkyl halide tests" experiment (12 chemicals) was, as of 2026-11-17, only in the Claude app's built-in browser; rebuild it in Nitzan's own browser or use Export all / Import.
