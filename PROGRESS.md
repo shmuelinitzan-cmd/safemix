@@ -76,6 +76,7 @@ Last updated: 2026-11-26
   - On these 6 records: the old (`main`) and fixed parsers give the same card values; no text found that triggers bugs 4, 5, 10 or 11; no combined GHS lines or NFPA ranges. This covers these records only.
   - Also: when an NFPA rating can't be read, the table, PDF and CSV show the NFPA text and the GHS cell together (SPEC updated). PDF page breaks checked with fake data; the on-screen layout was checked by tests only, not in a browser.
   - `deploy.yml` runs lint and tests before the build. This closes the testing task: anything new becomes a GitHub issue.
+- **PR checks and rules (2026-11-27, branch `tests`, PR #10).** CLAUDE.md has a "Definition of done". `.github/workflows/pr.yml` runs lint and tests on every Pull Request, without deploying (issue #9). PR #10 is not merged; Nitzan merges it from GitHub.
 
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).
