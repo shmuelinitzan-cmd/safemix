@@ -61,7 +61,6 @@ Last updated: 2026-11-26
   - **Fixes (2026-11-27, approved by Nitzan, not pushed):** bugs 1–3 (a temperature or pressure range that can't be converted as a whole is left as the source wrote it, including its measuring temperature; the same for a measuring-temperature range with a °F end, in vapour pressure and density) and bug 6 (an empty or incomplete record is an error, so no card). Ranges are recognised when joined by a dash or "to". Display of the demo cards is unchanged.
   - Now 323 tests: 320 pass, 3 expected fail (bugs 4, 5, 7). Lint and build pass. The counts and bug list above describe the state before the fixes.
   - Open GitHub issues: #3 (503 message), #4 (kelvin), #5 (°F without "at"), #6 (decide: several CIDs, no timeout).
-  - Later stages (each needs Nitzan's go-ahead): 3 = real-record fixtures and live check; then add lint and tests to `deploy.yml` as a separate commit (ask before any push).
 - **Test plan, stage 2 (2026-11-27, local branch `tests`, not pushed).**
   - New tests for molecular weight and formula parsing (`src/lib/mw.test.ts`) and PubChem record parsing (`src/lib/pubchem.test.ts`), with fake records. App code unchanged.
   - 429 tests: 418 pass, 11 expected fail (3 from stage 1, 8 new). Pass with the network blocked; lint and build pass.
@@ -69,6 +68,14 @@ Last updated: 2026-11-26
   - Current behaviour, pinned by a test: a combined GHS code ("H302+H332") or a "<" share is dropped without a notice. Whether PubChem uses these forms there is not verified.
   - **Fixes (2026-11-27, approved by Nitzan, not pushed):** bug 8 (blank text counts as missing, so the GHS fallback still works); bug 9 (an NFPA rating must be one whole number 0–4, alone or followed by " - explanation"; anything else is shown as written and "Not verified", `?*` in the diamond if too long); GHS lines (combined codes like "H302+H332" are read; a line that can't be read is shown as written in the GHS summary and in the route of each code it mentions; a line without a code is in the summary only). Statements under 50% are still left out, as SPEC says.
   - Now 457 tests: 451 pass, 6 expected fail (bugs 4, 5, 7, 10, 11).
+  - Open GitHub issues: #3–#6, plus #7 (MW unit not shown in the table) and #8 (formula groups and hydrates).
+- **Test plan, stage 3 (2026-11-27, local branch `tests`, not pushed).**
+  - Real PubChem records for the 5 demo chemicals and iodoform in `src/lib/__fixtures__/`, trimmed to the sections the parser reads (whole sections removed, no remaining text changed; about 1.6 MB, was 10.8 MB). Each has a `.source.txt` (CID, URL, retrieval date, checksums of the original and trimmed file). `src/lib/fixtures.test.ts` checks the trimmed checksum, that every PubChem value is in the record, and the recorded parser output. The full originals are not in the pushed history.
+  - `npm run test:live` (opt-in, not in `npm test` or the deploy): 24 checks, all passed on 2026-11-27.
+  - 498 tests: 492 pass, 6 expected fail (bugs 4, 5, 7, 10, 11). Pass with the network blocked; lint and build pass.
+  - On these 6 records: the old (`main`) and fixed parsers give the same card values; no text found that triggers bugs 4, 5, 10 or 11; no combined GHS lines or NFPA ranges. This covers these records only.
+  - Also: when an NFPA rating can't be read, the table, PDF and CSV show the NFPA text and the GHS cell together (SPEC updated). PDF page breaks checked with fake data; the on-screen layout was checked by tests only, not in a browser.
+  - `deploy.yml` runs lint and tests before the build. This closes the testing task: anything new becomes a GitHub issue.
 
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).

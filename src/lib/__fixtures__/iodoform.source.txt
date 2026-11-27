@@ -1,0 +1,8 @@
+CID: 6374
+URL: https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6374/JSON
+Retrieved: 2026-11-27
+Original-SHA-256: 0742be36d7e579705d88628969a4fb570535c3cea8742040f9fd8796a0480b96
+Original-bytes: 649378
+Trimmed-SHA-256: aa776108372dbc7d91acb4969be8268c5c8bf63a8eaaf782a00a9b28e969c5de
+Trimmed-bytes: 152841
+Trimmed: whole sections removed, no remaining text changed. Kept: Molecular Formula; Molecular Weight; Boiling Point; Melting Point; Density; Vapor Pressure; NFPA Hazard Classification; Signs and Symptoms; GHS Classification; CAS (and the sections that contain them).

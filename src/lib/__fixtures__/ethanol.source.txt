@@ -1,0 +1,8 @@
+CID: 702
+URL: https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/702/JSON
+Retrieved: 2026-11-27
+Original-SHA-256: 322858a7cf9c38586f6f65f0bb95dc0280647bb89f8bbcded5053b3ad7989409
+Original-bytes: 3483568
+Trimmed-SHA-256: 3ea207e070d2411d263e4798429ce9825923fe2d01de6c59cba512cfb74fffb9
+Trimmed-bytes: 335159
+Trimmed: whole sections removed, no remaining text changed. Kept: Molecular Formula; Molecular Weight; Boiling Point; Melting Point; Density; Vapor Pressure; NFPA Hazard Classification; Signs and Symptoms; GHS Classification; CAS (and the sections that contain them).
