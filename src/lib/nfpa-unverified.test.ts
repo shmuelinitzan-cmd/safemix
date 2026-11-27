@@ -83,16 +83,14 @@ describe('GHS stays in the table when an NFPA rating could not be read', () => {
     expect(row).toContain('1-2 (Not verified)')
     expect(row).toContain('GHS Danger: H225')
   })
-  // "H225:" with the colon appears in the table cell and the sources list; count both places.
   it('PDF: both, with the GHS cell in the table and not only in the sources list', async () => {
-    const count = (s: string) => s.split('H225').length - 1
     const text = await pdf(unread)
-    expect(text).toContain('1-2*')
-    expect(count(text)).toBeGreaterThan(count(await pdf(read)))
+    const main = text.slice(0, text.indexOf('Every value in the table, as stored'))
+    expect(main).toContain('1-2*')
+    expect(main).toContain('H225')
   })
-  it('a readable rating keeps one line with the NFPA columns only', () => {
-    expect(table(read)).not.toContain('GHS Danger: H225')
-    expect(table(read).match(/<tr/g)).toHaveLength(3)
-    expect(toCsv([read]).split('\r\n')[1]).not.toContain('H225')
+  it('a readable rating shows the GHS line too', () => {
+    expect(table(read)).toContain('GHS Danger: H225')
+    expect(toCsv([read]).split('\r\n')[1]).toContain('GHS Danger: H225')
   })
 })

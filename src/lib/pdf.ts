@@ -52,7 +52,7 @@ export async function buildExperimentPdfDoc(name: string, cards: ChemicalCard[],
     for (const id of NFPA_IDS) cells[id] = pdfCell(id, cells[id])
     const ghs = ghsInsteadOfNfpa(card)
     const below = ghsBesideNfpa(card)
-    // an NFPA rating that could not be read: a second line with the GHS cell under the NFPA columns
+    // NFPA data and a GHS summary: a second line with the GHS cell under the NFPA columns
     if (below) return [
       COLUMNS.map((c) => (NFPA_IDS.includes(c.id) ? pdfSafe(cells[c.id]) : { content: pdfSafe(cells[c.id]), rowSpan: 2 })),
       [{ content: pdfSafe(below), colSpan: NFPA_IDS.length, styles: ghsStyles }],
