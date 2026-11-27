@@ -1,7 +1,7 @@
 // Reads PubChem's PUG REST / PUG View answers into the lab-table card fields.
 // The app only ever copies text that PubChem returned. Nothing is invented here.
 import type { Field, FieldKey } from '../types/card.ts'
-import { FIELD_KEYS } from '../types/card.ts'
+import { FIELD_KEYS, GHS_NOT_CLASSIFIED } from '../types/card.ts'
 import { suggestWaste, WASTE_OVERRIDES } from './waste.ts'
 
 const PUG = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug'
@@ -159,6 +159,10 @@ function nfpa(record: Json, cid: number, name: string, date: string, digit: bool
 //  4. Nothing else is dropped silently. A line this rule cannot read (unknown form, or a share
 //     such as "< 99%" that does not say whether half was reached) is kept exactly as written:
 //     in the GHS summary, and in the route of every H-code it mentions.
+//  5. "Not Classified" and "Reported as not meeting GHS hazard criteria ..." are not hazard
+//     statements. They are quoted in the note. If the entry has no hazard code at all, the
+//     GHS summary reads "Not classified (no GHS hazard)". If it has any, even under half,
+//     "no GHS hazard" is never claimed.
 export const GHS_ROUTES: Record<'exp_eyes' | 'exp_skin' | 'exp_inhalation' | 'exp_ingestion', string[]> = {
   exp_eyes: ['H314', 'H318', 'H319', 'H320'],
   exp_skin: ['H310', 'H311', 'H312', 'H314', 'H315', 'H316', 'H317'],
@@ -189,6 +193,8 @@ export interface GhsStatement {
   signal?: 'Danger' | 'Warning'
   unread?: boolean // the line could not be read; `text` is the whole line as written
 }
+const NOT_A_HAZARD = /^\s*(?:not classified\s*$|reported as not meeting ghs hazard criteria\b)/i
+const isNotAHazard = (line: string) => NOT_A_HAZARD.test(line) && !new RegExp(H_CODE).test(line)
 function readGhsLine(line: string): GhsStatement | undefined {
   if (!line.trim()) return
   const asWritten = (): GhsStatement => {
@@ -204,14 +210,17 @@ function readGhsLine(line: string): GhsStatement | undefined {
   return { code: m[1], codes, text: `${m[1]}: ${m[4].trim()}`, signal: m[5] as GhsStatement['signal'] }
 }
 
-export function ghsStatements(record: Json): { info: Json; statements: GhsStatement[] } | undefined {
+// `notHazard` holds the entry's lines that say it is not classified; `hasCodes` tells whether
+// any line of the entry mentions a hazard code, kept or not.
+export function ghsStatements(record: Json): { info: Json; statements: GhsStatement[]; notHazard: string[]; hasCodes: boolean } | undefined {
   const infos: Json[] = (findSection(record.Section, 'GHS Classification')?.Information ?? []).filter((i: Json) => i.Name === 'GHS Hazard Statements')
   if (!infos.length) return
   const isEcha = (i: Json) => sourceName(record, i) === ECHA_NAME
   const info = infos.find(isEcha) ?? infos[0]
   const lines: string[] = info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []
-  const statements = lines.map(readGhsLine).filter((s): s is GhsStatement => !!s)
-  return { info, statements }
+  const statements = lines.filter((l) => !isNotAHazard(l)).map(readGhsLine).filter((s): s is GhsStatement => !!s)
+  const notHazard = lines.filter(isNotAHazard).map((l) => l.trim())
+  return { info, statements, notHazard, hasCodes: lines.some((l) => new RegExp(H_CODE).test(l)) }
 }
 
 function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date: string): Field | undefined {
@@ -231,12 +240,20 @@ function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date:
 // GHS is never turned into NFPA numbers: the two systems rate hazards differently.
 function ghsSummary(record: Json, cid: number, date: string): Field | undefined {
   const g = ghsStatements(record)
-  if (!g?.statements.length) return
+  if (!g) return
+  const quoted = `"${g.notHazard.join(' / ')}"`
+  if (!g.statements.length) {
+    if (!g.notHazard.length || g.hasCodes) return
+    const f = makeField(record, cid, 'GHS Classification', g.info, GHS_NOT_CLASSIFIED, date)
+    f.condition = undefined
+    f.note = `No hazard statement in the ${sourceName(record, g.info) ?? 'unnamed source'} entry. PubChem's text: ${quoted}`
+    return f
+  }
   const signal = g.statements.some((s) => s.signal === 'Danger') ? 'Danger' : g.statements.some((s) => s.signal === 'Warning') ? 'Warning' : undefined
   const list = [...new Set(g.statements.map((s) => s.text))].join(' · ')
   const f = makeField(record, cid, 'GHS Classification', g.info, signal ? `${signal}: ${list}` : list, date)
   f.condition = undefined
-  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)}.${g.statements.some((s) => s.unread) ? GHS_UNREAD_NOTE : ''}`
+  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)}.${g.statements.some((s) => s.unread) ? GHS_UNREAD_NOTE : ''}${g.notHazard.length ? ` Not a hazard statement, also in this entry: ${quoted}` : ''}`
   return f
 }
 

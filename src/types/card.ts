@@ -91,4 +91,7 @@ export interface ChemicalCard {
   not_verified?: string
 }
 
+// The GHS value when the source's entry has no hazard statement and says "Not Classified".
+export const GHS_NOT_CLASSIFIED = 'Not classified (no GHS hazard)'
+
 export const NO_DATA_LABEL = 'No data from approved sources'

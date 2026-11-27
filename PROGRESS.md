@@ -77,6 +77,7 @@ Last updated: 2026-11-26
   - Also: when an NFPA rating can't be read, the table, PDF and CSV show the NFPA text and the GHS cell together (SPEC updated). PDF page breaks checked with fake data; the on-screen layout was checked by tests only, not in a browser.
   - `deploy.yml` runs lint and tests before the build. This closes the testing task: anything new becomes a GitHub issue.
 - **PR checks and rules (2026-11-27, branch `tests`, PR #10).** CLAUDE.md has a "Definition of done". `.github/workflows/pr.yml` runs lint and tests on every Pull Request, without deploying (issue #9). PR #10 is not merged; Nitzan merges it from GitHub.
+- **Lab 3+4 check and fix (2026-11-27).** 15 chemicals looked up in the app on `tests` and on `main`; all found, and every value labelled PubChem was in the record the app received. The one difference from `main` was sodium bicarbonate, whose "Not Classified" text showed as a hazard statement. Fixed: it reads "Not classified (no GHS hazard)" with its source. Open findings: GitHub issues for the 4-aminophenol density, the carbonate waste suggestion, the single GHS entry, the sodium bicarbonate melting point, and the Node 20 actions warning. Undecided, no issue: the GHS summary is not in the table when a card has an NFPA rating (e.g. H351 on dichloromethane).
 
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).

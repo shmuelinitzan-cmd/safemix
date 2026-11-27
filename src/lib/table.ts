@@ -3,7 +3,7 @@
 //   NFPA (fire, health, reactivity, special) | exposure (eyes, skin, inhalation, ingestion)
 // One function builds the cell text, and the screen, the CSV and the PDF all use it.
 import type { ChemicalCard, FieldKey } from '../types/card.ts'
-import { FIELD_LABELS } from '../types/card.ts'
+import { FIELD_LABELS, GHS_NOT_CLASSIFIED } from '../types/card.ts'
 import { densityForCard, temperatureForCard, vapourPressureForCard, type CardValue } from './units.ts'
 import { shortSource } from './sources.ts'
 import { documentedReference, isNotVerified, NOT_VERIFIED } from './provenance.ts'
@@ -72,7 +72,13 @@ function temperature(card: ChemicalCard, key: FieldKey): string {
 export function ghsInsteadOfNfpa(card: ChemicalCard): string | undefined {
   const f = card.fields
   if (f.nfpa_fire || f.nfpa_health || f.nfpa_reactivity || f.nfpa_special || !f.ghs) return undefined
-  return `GHS ${plain(card, 'ghs')}`
+  return ghsText(card)
+}
+// "Not classified" names its source in the cell, so it is never read as an unsourced all-clear.
+function ghsText(card: ChemicalCard): string {
+  const f = card.fields.ghs!
+  const source = f.value === GHS_NOT_CLASSIFIED && f.upstream ? `, source: ${shortSource(f.upstream)}` : ''
+  return `GHS ${plain(card, 'ghs', f.value + source)}`
 }
 export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 
@@ -81,7 +87,7 @@ export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 export function ghsBesideNfpa(card: ChemicalCard): string | undefined {
   const f = card.fields
   if (!f.ghs || ![f.nfpa_fire, f.nfpa_health, f.nfpa_reactivity].some((r) => r?.unverified)) return undefined
-  return `GHS ${plain(card, 'ghs')}`
+  return ghsText(card)
 }
 
 export function cellsFor(card: ChemicalCard): Record<string, string> {
