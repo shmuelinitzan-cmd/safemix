@@ -82,13 +82,18 @@ describe('NFPA ratings', () => {
     parse(section('NFPA Hazard Classification', ...values.map((v) => named('NFPA Fire Rating', v)))).fields.nfpa_fire?.value
 
   it.each(['0', '1', '2', '3', '4'])('accepts %s', (v) => expect(fire(v)).toBe(v))
-  it('keeps only the digit when text follows', () => expect(fire('2 - fake explanation')).toBe('2'))
-  it.each(['5', '10', '-1', 'OX', '', 'rating 2'])('rejects "%s"', (v) => expect(fire(v)).toBeUndefined())
-  // BUG: NFPA "1.5" is read as 1.
-  it.fails('BUG: rejects a fraction instead of cutting it to a whole number', () => expect(fire('1.5')).toBeUndefined())
-  // BUG: NFPA "1-2" is read as 1.
-  it.fails('BUG: rejects a range instead of keeping its first number', () => expect(fire('1-2')).toBeUndefined())
-  it('goes on to the next entry when the first is not a rating', () => expect(fire('fake', '3')).toBe('3'))
+  it.each(['2 - fake explanation', '2 - Fake text, below 100 or 1-2 units', ' 2 - Fake text.\nSecond line'])(
+    'keeps only the digit when an explanation follows: "%s"', (v) => expect(fire(v)).toBe('2'))
+  const unread = ['5', '10', '-1', 'OX', 'rating 2', '1.5', '1-2', '1 - 2', '2 - or 3', '1 - to 2', '3 or 4', '2 -', '1, 2']
+  it.each(unread)('"%s" is kept as written and marked unverified: no number is cut out of it', (v) => {
+    const f = parse(section('NFPA Hazard Classification', named('NFPA Fire Rating', v))).fields.nfpa_fire
+    expect(f).toMatchObject({ value: v, unverified: true, note: 'Not a single whole number from 0 to 4. Shown as PubChem wrote it.' })
+  })
+  it.each(['', '   '])('a blank entry "%s" is missing', (v) => expect(fire(v)).toBeUndefined())
+  it('a later entry with a real rating is used', () => expect(fire('fake', '3')).toBe('3'))
+  it('a real rating is not marked unverified', () => {
+    expect(parse(section('NFPA Hazard Classification', named('NFPA Fire Rating', '3'))).fields.nfpa_fire?.unverified).toBeUndefined()
+  })
 
   const special = (v: string) => parse(section('NFPA Hazard Classification', named('NFPA Specific Notice', v))).fields.nfpa_special?.value
   it('the special notice keeps only the symbol', () => expect(special('XX - fake explanation - more')).toBe('XX'))
@@ -109,8 +114,7 @@ describe('exposure: ICSC symptoms first, then GHS, route by route', () => {
     expect(r.fields.exp_ingestion).toBeUndefined()
     expect(r.missing).toContain('exp_ingestion')
   })
-  // BUG: a blank symptom becomes an empty value and blocks the GHS fallback.
-  it.fails('BUG: a symptom entry that is only spaces counts as missing, so GHS is used', () => {
+  it('a symptom entry that is only spaces counts as missing, so GHS is used', () => {
     const blank = parse(section('Signs and Symptoms', named('Eye Exposure', '   ')), ghs(statement('H319')))
     expect(blank.fields.exp_eyes?.value).toBe('H319: fake H319')
   })
@@ -120,17 +124,55 @@ describe('GHS: which statements are kept', () => {
   const codes = (...lines: string[]) => ghsStatements(record(ghs(...lines)))?.statements.map((s) => s.code)
   it.each<[string, boolean]>([
     [' (49.9%)', false], [' (50%)', true], [' (50.0%)', true], [' (100%)', true],
-    ['', true], [' (> 99.9%)', true], [' (>99.9%)', true], [' (> 49%)', false],
+    ['', true], [' (> 99.9%)', true], [' (>99.9%)', true], [' (> 50%)', true],
   ])('share "%s" kept: %s', (share, kept) => expect(codes(statement('H319', share))).toEqual(kept ? ['H319'] : []))
 
   it('keeps a statement that has no class in brackets', () => expect(codes('H319 (100%): fake text')).toEqual(['H319']))
-  it('ignores lines that are not statements', () => expect(codes('Not a statement', 'P264: fake')).toEqual([]))
+  it('ignores blank lines', () => expect(codes('', '   ')).toEqual([]))
   it('lists a repeated statement once', () => {
     expect(parse(ghs(statement('H319'), statement('H319'))).fields.exp_eyes?.value).toBe('H319: fake H319')
   })
-  // Records today's behaviour. Whether PubChem uses these forms here is not verified.
-  it('current behaviour: a combined code or a "<" share is dropped without a notice', () => {
-    expect(codes('H302+H332 (100%): fake [Warning Fake]', 'H319 (< 99%): fake [Warning Fake]')).toEqual([])
+})
+
+describe('GHS: no hazard is dropped silently', () => {
+  const routes = ['exp_eyes', 'exp_skin', 'exp_inhalation', 'exp_ingestion'] as const
+
+  it('a combined statement goes to the route of each of its codes', () => {
+    const f = parse(ghs('H302+H312+H332 (100%): fake combined [Warning Fake]')).fields
+    for (const k of ['exp_skin', 'exp_inhalation', 'exp_ingestion'] as const) expect(f[k]?.value).toBe('H302+H312+H332: fake combined')
+    expect(f.exp_eyes).toBeUndefined()
+    expect(f.ghs?.value).toBe('Warning: H302+H312+H332: fake combined')
+    expect(f.ghs?.note).not.toContain('could not read')
+  })
+  it('a combined statement written with spaces is read too', () => {
+    expect(parse(ghs('H315 + H319: fake combined')).fields.exp_eyes?.value).toBe('H315 + H319: fake combined')
+  })
+  it('a combined statement under half is left out, like any other', () => {
+    expect(parse(ghs('H302+H332 (20%): fake [Warning Fake]')).fields.ghs).toBeUndefined()
+  })
+  it('a code with letters after the number is kept', () => {
+    expect(parse(ghs('H360FD (100%): fake [Danger Fake]')).fields.ghs?.value).toBe('Danger: H360FD: fake')
+  })
+  it.each(['H319 (< 99%): fake [Warning Fake]', 'H319 (> 40%): fake [Warning Fake]', 'H319 fake without a colon', 'H319 (about half): fake'])(
+    'an unreadable line is shown as written, in the summary and its route: "%s"', (line) => {
+      const f = parse(ghs(line)).fields
+      expect(f.ghs?.value).toBe(line)
+      expect(f.exp_eyes?.value).toBe(line)
+      for (const k of ['ghs', 'exp_eyes'] as const) expect(f[k]?.note).toContain('could not read')
+    })
+  it('an unreadable line with two codes goes to both routes', () => {
+    const line = 'H302 and H319 fake'
+    const f = parse(ghs(line)).fields
+    expect([f.exp_eyes?.value, f.exp_ingestion?.value]).toEqual([line, line])
+  })
+  it('a line without any code is shown in the summary only', () => {
+    const f = parse(ghs('Fake unreadable line')).fields
+    expect(f.ghs?.value).toBe('Fake unreadable line')
+    for (const k of routes) expect(f[k]).toBeUndefined()
+  })
+  it('the signal word comes only from statements that were read', () => {
+    expect(parse(ghs(statement('H315'), 'H319 (< 99%): fake [Danger Fake]')).fields.ghs?.value)
+      .toBe('Warning: H315: fake H315 · H319 (< 99%): fake [Danger Fake]')
   })
 })
 
@@ -139,8 +181,7 @@ describe('CAS number', () => {
     expect(cardFromLookup(parse(section('CAS', swm('0-00-0')))).id).toBe('cas-0-00-0')
   })
   it('when absent, the card id uses the CID', () => expect(cardFromLookup(parse()).id).toBe('cid-1'))
-  // BUG: a CAS made only of spaces is accepted.
-  it.fails('BUG: a CAS entry that is only spaces counts as absent', () => {
+  it('a CAS entry that is only spaces counts as absent', () => {
     expect(parse(section('CAS', swm('   '))).cas).toBeUndefined()
   })
 })

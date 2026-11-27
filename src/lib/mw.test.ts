@@ -56,8 +56,7 @@ describe('A4: a missing MW stays missing, and nothing is derived from the formul
     expect(r.fields.mw).toBeUndefined()
     expect(r.missing).toContain('mw')
   })
-  // BUG: a MW made only of spaces is accepted as a value.
-  it.fails('BUG: text that is only spaces', () => expect(mwOf(text('   '))).toBeUndefined())
+  it('text that is only spaces', () => expect(mwOf(text('   '))).toBeUndefined())
 })
 
 describe('A5-A6: where the value came from', () => {

@@ -61,6 +61,7 @@ function field(x: unknown, what: string): Field {
     const v = str(x[k], `${what} ${k}`, 5000, true)
     if (v !== undefined) f[k] = v
   }
+  if (x.unverified === true) f.unverified = true
   if (x.quantity !== undefined) f.quantity = oneOf(x.quantity, ['relative_density'], `${what} quantity`) as 'relative_density'
   return f
 }

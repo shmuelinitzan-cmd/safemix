@@ -40,9 +40,9 @@ export const FOOTNOTES = [
   `${EMPTY_CELL} = No data from approved sources.`,
   '† = Rule-based suggestion, confirm with lab instructions.',
   'converted from ... = shown in the table\'s units; the source\'s original value follows it and is on the sources page.',
-  'GHS = no NFPA 704 rating in the approved sources; the GHS hazard statements are shown instead (not converted to NFPA numbers).',
+  'GHS = the GHS hazard statements (not converted to NFPA numbers). Shown instead of the NFPA columns when the approved sources have no NFPA 704 rating, and below them when a rating could not be read.',
   '(SDS) = typed in from the supplier SDS; the SDS is named on the sources page.',
-  `${NOT_VERIFIED} = typed in by hand without a named SDS; not verified against an approved source.`,
+  `${NOT_VERIFIED} = typed in by hand without a named SDS, or a source entry SafeMix could not read (shown as written).`,
 ]
 
 // A value as shown in the table. Its condition is added when there is one, then a mark for
@@ -76,6 +76,14 @@ export function ghsInsteadOfNfpa(card: ChemicalCard): string | undefined {
 }
 export const NFPA_IDS = ['fire', 'health', 'reactivity', 'special']
 
+// When an NFPA rating could not be read, the NFPA columns keep their text AND the GHS cell is
+// shown with them (on a second line under those columns), so no hazard drops out of the table.
+export function ghsBesideNfpa(card: ChemicalCard): string | undefined {
+  const f = card.fields
+  if (!f.ghs || ![f.nfpa_fire, f.nfpa_health, f.nfpa_reactivity].some((r) => r?.unverified)) return undefined
+  return `GHS ${plain(card, 'ghs')}`
+}
+
 export function cellsFor(card: ChemicalCard): Record<string, string> {
   const f = card.fields
   const g = (k: FieldKey) => plain(card, k)
@@ -106,10 +114,10 @@ const csvCell = (s: string) => (/[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"
 
 // Empty cells stay empty in the CSV (not "–"), so a spreadsheet sees a real blank.
 export function toCsv(cards: ChemicalCard[]): string {
-  const header = [...COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label)), 'GHS hazards (when no NFPA rating)']
+  const header = [...COLUMNS.map((c) => (c.group ? `${c.group}: ${c.label}` : c.label)), 'GHS hazards (when no NFPA rating, or one could not be read)']
   const rows = cards.map((card) => {
     const cells = cellsFor(card)
-    const ghs = ghsInsteadOfNfpa(card)
+    const ghs = ghsInsteadOfNfpa(card) ?? ghsBesideNfpa(card)
     return [...COLUMNS.map((c) => (cells[c.id] === EMPTY_CELL ? '' : cells[c.id].replace(/\n/g, '; '))), ghs ?? ''].map(csvCell)
   })
   // BOM so Excel reads the degree signs correctly.
@@ -149,7 +157,8 @@ export function sourceRows(cards: ChemicalCard[]): SourceRow[] {
         f.origin === 'rule' && f.status === 'pending' ? 'Rule-based suggestion, not yet confirmed.' : undefined,
       ].filter(Boolean).join(' ')
       const reference = documentedReference(card, k)
-      const sourceName = reference ?? (isNotVerified(card, k) && f.source === 'sds' ? `${NOT_VERIFIED} (SDS not named)` : `${SOURCE_NAMES[f.source]}${via}`)
+      const sourceName = reference ?? (isNotVerified(card, k) && f.source === 'sds' ? `${NOT_VERIFIED} (SDS not named)`
+        : f.unverified ? `${NOT_VERIFIED}: ${SOURCE_NAMES[f.source]}${via}` : `${SOURCE_NAMES[f.source]}${via}`)
       out.push({
         chemical, field: FIELD_LABELS[k], value: f.value.replace(/\n/g, ' / '),
         // a hand-entered value gets no link: an older source's link would not back it

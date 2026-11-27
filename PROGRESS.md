@@ -67,6 +67,8 @@ Last updated: 2026-11-26
   - 429 tests: 418 pass, 11 expected fail (3 from stage 1, 8 new). Pass with the network blocked; lint and build pass.
   - New bugs, not fixed (waiting for Nitzan): (8) a value made only of spaces is accepted for MW, exposure symptoms (which also blocks the GHS fallback) and CAS; (9) NFPA "1.5" or "1-2" is read as 1; (10) the table, CSV and PDF cells drop the MW unit; (11) formula parsing ignores group and hydrate multipliers. Whether real PubChem data triggers 8–11 is not verified.
   - Current behaviour, pinned by a test: a combined GHS code ("H302+H332") or a "<" share is dropped without a notice. Whether PubChem uses these forms there is not verified.
+  - **Fixes (2026-11-27, approved by Nitzan, not pushed):** bug 8 (blank text counts as missing, so the GHS fallback still works); bug 9 (an NFPA rating must be one whole number 0–4, alone or followed by " - explanation"; anything else is shown as written and "Not verified", `?*` in the diamond if too long); GHS lines (combined codes like "H302+H332" are read; a line that can't be read is shown as written in the GHS summary and in the route of each code it mentions; a line without a code is in the summary only). Statements under 50% are still left out, as SPEC says.
+  - Now 457 tests: 451 pass, 6 expected fail (bugs 4, 5, 7, 10, 11).
 
 ## Next steps (pilot phase)
 1. **Try SafeMix on more real experiments** (Nitzan's choice of experiments, before any LinkedIn post; the post waits until then).

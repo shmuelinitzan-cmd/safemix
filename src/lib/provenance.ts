@@ -14,10 +14,12 @@ export function documentedReference(card: ChemicalCard, key: FieldKey): string |
   return f && fix?.reference && f.source === 'user' && f.value === fix.value && f.note === fix.note ? fix.reference : undefined
 }
 
-// Typed in by hand (with no documented reference), or marked as SDS without naming the SDS.
+// Typed in by hand (with no documented reference), marked as SDS without naming the SDS, or a
+// source entry the app could not read.
 export function isNotVerified(card: ChemicalCard, key: FieldKey): boolean {
   const f = card.fields[key]
   if (!f) return false
+  if (f.unverified) return true
   if (f.source === 'sds') return !f.upstream?.trim()
   return f.source === 'user' && !documentedReference(card, key)
 }

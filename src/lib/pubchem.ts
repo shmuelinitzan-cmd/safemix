@@ -19,8 +19,11 @@ function findSection(sections: Json[] | undefined, heading: string): Json | unde
 }
 
 const anchor = (heading: string) => heading.replace(/[^A-Za-z0-9]+/g, '-')
-const text = (info: Json): string | undefined =>
-  info?.Value?.StringWithMarkup?.map((x: Json) => x.String).join('\n')
+// Text that is empty or only spaces counts as missing.
+const text = (info: Json): string | undefined => {
+  const s: string | undefined = info?.Value?.StringWithMarkup?.map((x: Json) => x.String).join('\n')
+  return s?.trim() ? s : undefined
+}
 
 export async function fetchCid(nameOrCas: string): Promise<number> {
   const res = await fetch(`${PUG}/compound/name/${encodeURIComponent(nameOrCas.trim())}/cids/JSON`)
@@ -35,7 +38,7 @@ export async function fetchRecord(cid: number): Promise<Json> {
   if (!res.ok) throw new Error(`PubChem record ${cid} failed (HTTP ${res.status}).`)
   const record = (await res.json())?.Record
   // Without its number and title there is nothing to make a card from.
-  if (!record?.RecordNumber || !record.RecordTitle) throw new Error(`PubChem returned an empty or incomplete record for CID ${cid}.`)
+  if (!record?.RecordNumber || !String(record.RecordTitle ?? '').trim()) throw new Error(`PubChem returned an empty or incomplete record for CID ${cid}.`)
   return record
 }
 
@@ -99,9 +102,10 @@ function density(record: Json, cid: number, date: string): Field | undefined {
 
 function molecularWeight(record: Json, cid: number, date: string): Field | undefined {
   const heading = 'Molecular Weight'
-  const info = findSection(record.Section, heading)?.Information?.[0]
-  const v = info && (text(info) ?? (info.Value?.Number?.[0] !== undefined ? String(info.Value.Number[0]) : undefined))
-  if (!v) return
+  const valueOf = (i: Json): string | undefined => text(i) ?? (i.Value?.Number?.[0] !== undefined ? String(i.Value.Number[0]) : undefined)
+  const info = findSection(record.Section, heading)?.Information?.find(valueOf) // the first entry that is not blank
+  if (!info) return
+  const v = valueOf(info)!
   const f = makeField(record, cid, heading, info, v, date)
   f.unit = info.Value?.Unit ?? 'g/mol'
   return f
@@ -117,16 +121,29 @@ function symptoms(record: Json, cid: number, name: string, date: string): Field 
     }
 }
 
-// NFPA 704: first PubChem entry with that name. PubChem calls reactivity "Instability".
+// NFPA 704. PubChem calls reactivity "Instability".
+// A rating is a single whole number 0-4, alone or followed by " - explanation". The first such
+// entry with that name is used. If none is one (e.g. "1.5" or "1-2"), the first entry is kept
+// exactly as written and marked unverified: no number is ever cut out of it.
 // The special-hazard entry is kept as its symbol only (e.g. "OX"), not the explanatory sentence.
+const NFPA_RATING = /^([0-4])(?:\s+-\s+(?!(?:to|or|and)\b)[A-Za-z][\s\S]*)?$/
+const NFPA_UNREAD_NOTE = 'Not a single whole number from 0 to 4. Shown as PubChem wrote it.'
 function nfpa(record: Json, cid: number, name: string, date: string, digit: boolean): Field | undefined {
   const heading = 'NFPA Hazard Classification'
-  for (const info of findSection(record.Section, heading)?.Information ?? [])
-    if (info.Name === name) {
-      const raw = text(info)?.trim()
-      const v = digit ? /^([0-4])\b/.exec(raw ?? '')?.[1] : raw?.split(/\s+-\s+/)[0].trim()
-      if (v) return makeField(record, cid, heading, info, v, date)
-    }
+  const entries: { info: Json; raw: string }[] = (findSection(record.Section, heading)?.Information ?? [])
+    .filter((info: Json) => info.Name === name && text(info))
+    .map((info: Json) => ({ info, raw: text(info)!.trim() }))
+  if (!entries.length) return
+  if (!digit) {
+    const symbol = entries[0].raw.split(/\s+-\s+/)[0].trim()
+    return makeField(record, cid, heading, entries[0].info, symbol, date)
+  }
+  for (const { info, raw } of entries) {
+    const rating = NFPA_RATING.exec(raw)?.[1]
+    if (rating) return makeField(record, cid, heading, info, rating, date)
+  }
+  const f = makeField(record, cid, heading, entries[0].info, entries[0].raw, date)
+  return { ...f, condition: undefined, unverified: true, note: NFPA_UNREAD_NOTE }
 }
 
 // ---- GHS hazard statements (fallback for the exposure columns) ----------------------
@@ -137,7 +154,11 @@ function nfpa(record: Json, cid: number, name: string, date: string, digit: bool
 //     text), or that carry no percentage. A code only a minority reported is dropped.
 //  3. Sort each kept statement to a route by its H-code (table below). Codes for other effects
 //     (e.g. aquatic toxicity, flammability) are not exposure routes and are not shown here.
+//     A combined statement ("H302+H332") goes to the route of each of its codes.
 //  The statement text is copied word for word, without the percentage and the bracketed class.
+//  4. Nothing else is dropped silently. A line this rule cannot read (unknown form, or a share
+//     such as "< 99%" that does not say whether half was reached) is kept exactly as written:
+//     in the GHS summary, and in the route of every H-code it mentions.
 export const GHS_ROUTES: Record<'exp_eyes' | 'exp_skin' | 'exp_inhalation' | 'exp_ingestion', string[]> = {
   exp_eyes: ['H314', 'H318', 'H319', 'H320'],
   exp_skin: ['H310', 'H311', 'H312', 'H314', 'H315', 'H316', 'H317'],
@@ -157,30 +178,50 @@ function ghsOrigin(record: Json, info: Json): string {
     : `from ${name ?? 'a source PubChem does not name'}`
 }
 
-export interface GhsStatement { code: string; text: string; signal?: 'Danger' | 'Warning' }
+const H_CODE = 'H\\d{3}[A-Za-z]*'
+const GHS_LINE = new RegExp(`^(${H_CODE}(?:\\s*\\+\\s*${H_CODE})*)(?:\\s*\\((>\\s*)?(\\d+(?:\\.\\d+)?)%\\))?:\\s*([^[]+?)\\s*(?:\\[(Danger|Warning)?|$)`)
+const GHS_UNREAD_NOTE = ' Includes text SafeMix could not read, shown as PubChem wrote it (reporting share not checked).'
+
+export interface GhsStatement {
+  code: string // as written, e.g. "H319" or "H302+H332"
+  codes: string[]
+  text: string
+  signal?: 'Danger' | 'Warning'
+  unread?: boolean // the line could not be read; `text` is the whole line as written
+}
+function readGhsLine(line: string): GhsStatement | undefined {
+  if (!line.trim()) return
+  const asWritten = (): GhsStatement => {
+    const codes = [...new Set<string>(line.match(new RegExp(H_CODE, 'g')) ?? [])]
+    return { code: codes.join('+'), codes, text: line.trim(), unread: true }
+  }
+  const m = GHS_LINE.exec(line)
+  if (!m) return asWritten()
+  if (m[3] !== undefined && Number(m[3]) < GHS_MIN_SHARE) {
+    return m[2] ? asWritten() : undefined // "> 40%" may or may not reach half
+  }
+  const codes = m[1].split('+').map((c) => c.trim())
+  return { code: m[1], codes, text: `${m[1]}: ${m[4].trim()}`, signal: m[5] as GhsStatement['signal'] }
+}
+
 export function ghsStatements(record: Json): { info: Json; statements: GhsStatement[] } | undefined {
   const infos: Json[] = (findSection(record.Section, 'GHS Classification')?.Information ?? []).filter((i: Json) => i.Name === 'GHS Hazard Statements')
   if (!infos.length) return
   const isEcha = (i: Json) => sourceName(record, i) === ECHA_NAME
   const info = infos.find(isEcha) ?? infos[0]
-  const statements: GhsStatement[] = []
-  for (const line of info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []) {
-    const m = /^(H\d{3})(?:\s*\((>\s*)?(\d+(?:\.\d+)?)%\))?:\s*([^[]+?)\s*(?:\[(Danger|Warning)?|$)/.exec(line)
-    if (!m) continue
-    if (m[3] !== undefined && Number(m[3]) < GHS_MIN_SHARE) continue
-    statements.push({ code: m[1], text: `${m[1]}: ${m[4].trim()}`, signal: m[5] as GhsStatement['signal'] })
-  }
+  const lines: string[] = info.Value?.StringWithMarkup?.map((x: Json) => x.String as string) ?? []
+  const statements = lines.map(readGhsLine).filter((s): s is GhsStatement => !!s)
   return { info, statements }
 }
 
 function ghsRoute(record: Json, cid: number, key: keyof typeof GHS_ROUTES, date: string): Field | undefined {
   const g = ghsStatements(record)
   if (!g) return
-  const hits = g.statements.filter((s) => GHS_ROUTES[key].includes(s.code))
+  const hits = g.statements.filter((s) => s.codes.some((c) => GHS_ROUTES[key].includes(c)))
   if (!hits.length) return
   const f = makeField(record, cid, 'GHS Classification', g.info, [...new Set(hits.map((h) => h.text))].join('; '), date)
   f.condition = undefined
-  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)} (no ICSC symptoms for this route in PubChem).`
+  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)} (no ICSC symptoms for this route in PubChem).${hits.some((h) => h.unread) ? GHS_UNREAD_NOTE : ''}`
   return f
 }
 
@@ -195,7 +236,7 @@ function ghsSummary(record: Json, cid: number, date: string): Field | undefined 
   const list = [...new Set(g.statements.map((s) => s.text))].join(' · ')
   const f = makeField(record, cid, 'GHS Classification', g.info, signal ? `${signal}: ${list}` : list, date)
   f.condition = undefined
-  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)}.`
+  f.note = `GHS hazard statements ${ghsOrigin(record, g.info)}.${g.statements.some((s) => s.unread) ? GHS_UNREAD_NOTE : ''}`
   return f
 }
 

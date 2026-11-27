@@ -37,6 +37,7 @@ export function editField(card: ChemicalCard, key: FieldKey, value: string, note
       ...(old ?? { source_url: '', retrieved_at: today() }),
       value: trimmed,
       unit: undefined,
+      unverified: undefined, // a new value replaces the entry that could not be read
       quantity: undefined,
       condition: undefined,
       source: sds ? 'sds' : 'user',
