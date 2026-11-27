@@ -58,6 +58,9 @@ Last updated: 2026-11-26
   - New tests for unit conversions (`src/lib/units.test.ts`) and retrieval with a fake network (`src/lib/fetch.test.ts`). App code unchanged.
   - 295 tests: 288 pass, 7 are "expected fail" (known bugs, `it.fails`, not fixed; waiting for Nitzan's decision). Tests also pass with the network blocked; lint and build (with type check) pass.
   - Bugs: (1) and (2) a range repeating °F ("to" or dash) is half-converted; (3) the same for a kPa range in vapour pressure; (4) vapour pressure ignores temperatures in K when picking the value nearest 20 °C; (5) density: a °F measuring temperature without "at" is not converted; (6) an empty PubChem record is accepted; (7) any HTTP error reads "could not find" (GitHub issue #3). All use made-up inputs; whether real PubChem text triggers 1–6 is not verified.
+  - **Fixes (2026-11-27, approved by Nitzan, not pushed):** bugs 1–3 (a temperature or pressure range that can't be converted as a whole is left as the source wrote it, including its measuring temperature; the same for a measuring-temperature range with a °F end, in vapour pressure and density) and bug 6 (an empty or incomplete record is an error, so no card). Ranges are recognised when joined by a dash or "to". Display of the demo cards is unchanged.
+  - Now 323 tests: 320 pass, 3 expected fail (bugs 4, 5, 7). Lint and build pass. The counts and bug list above describe the state before the fixes.
+  - Open GitHub issues: #3 (503 message), #4 (kelvin), #5 (°F without "at"), #6 (decide: several CIDs, no timeout).
   - Later stages (each needs Nitzan's go-ahead): 2 = molecular weight and parsing; 3 = real-record fixtures and live check; then add lint and tests to `deploy.yml` as a separate commit (ask before any push).
 
 ## Next steps (pilot phase)

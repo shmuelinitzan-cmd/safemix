@@ -8,11 +8,24 @@ function round1(x: number) {
   return Math.round(x * 10) / 10
 }
 
+// Cautious rule for ranges: a range that cannot be converted as a whole is left exactly as
+// the source wrote it. Converting only its first end would mix two units in one value.
+const RANGE_LINK = `\\s*(?:-|–|—|−|to\\b)\\s*${QUAL}[-−]?\\d`
+const continuesAsRange = (rest: string) => new RegExp(`^${RANGE_LINK}`, 'i').test(rest)
+
+// A pressure range with an end in a unit other than mmHg, e.g. "10 kPa - 20 kPa" or "10-20 kPa".
+const P_UNIT = '(?:mmHg|kPa|Pa|bar|atm|torr)\\b'
+const PRESSURE_RANGE = new RegExp(`^\\s*${QUAL}${NUM}\\s*(?<first>${P_UNIT})?${RANGE_LINK}\\d*(?:\\.\\d+)?\\s*(?<second>${P_UNIT})?`, 'i')
+function isUnconvertedPressureRange(value: string): boolean {
+  const units = PRESSURE_RANGE.exec(value)?.groups
+  return !!units && [units.first, units.second].some((u) => u && u.toLowerCase() !== 'mmhg')
+}
+
 // Converts only the LEADING quantity of the text (so "180 mmHg at 68 °F" is untouched:
 // the 68 °F is the measuring temperature, not the value).
 export function convertTemperature(value: string): string | undefined {
   const m = new RegExp(`^\\s*${QUAL}${NUM}\\s*(°\\s?F|°\\s?C|K)\\b`, 'i').exec(value)
-  if (!m) return undefined
+  if (!m || continuesAsRange(value.slice(m[0].length))) return undefined
   const n = Number(m[2])
   const unit = m[3].replace(/\s/g, '').toUpperCase()
   if (unit === '°C') return undefined // already °C
@@ -24,7 +37,7 @@ const TO_MMHG: Record<string, number> = { mmhg: 1, kpa: 7.50062, pa: 0.00750062,
 
 export function convertPressure(value: string): string | undefined {
   const m = new RegExp(`^\\s*${QUAL}${NUM}\\s*(mmHg|kPa|Pa|bar|atm|torr)\\b`, 'i').exec(value)
-  if (!m) return undefined
+  if (!m || continuesAsRange(value.slice(m[0].length))) return undefined
   const unit = m[3].toLowerCase()
   if (unit === 'mmhg') return undefined // already mmHg
   const mm = Number(m[2]) * TO_MMHG[unit]
@@ -49,6 +62,15 @@ export function tidy(value: string): string {
 }
 
 const AT_F = /(\bat\s+)(-?\d+(?:\.\d+)?)\s*°\s?F\b/i
+// A range of measuring temperatures with an end in °F, e.g. "at 68 °F to 86 °F" or "at 68-86 °F".
+// Same cautious rule as other ranges: nothing in such a value is converted.
+const T_UNIT = '°\\s?[CF]\\b'
+const AT_RANGE = new RegExp(`\\bat\\s+${NUM}\\s*(?<first>${T_UNIT})?${RANGE_LINK}\\d*(?:\\.\\d+)?\\s*(?<second>${T_UNIT})?`, 'i')
+function isUnconvertedAtRange(value: string): boolean {
+  const units = AT_RANGE.exec(value)?.groups
+  return !!units && [units.first, units.second].some((u) => u && /f$/i.test(u))
+}
+
 const AT_TEMP_C = (s: string): number | undefined => {
   const m = /\bat\s+(-?\d+(?:\.\d+)?)\s*°\s?([CF])\b/i.exec(s)
   if (!m) return undefined
@@ -83,6 +105,7 @@ export function vapourPressureForCard(value: string): CardValue {
     const orig = icsc[4] ? `${icsc[3]} - ${icsc[4]} ${icsc[1]}` : `${icsc[3]} ${icsc[1]}`
     return { shown: `${orig} at ${icsc[2]}`, converted: `${range} mmHg at ${icsc[2]}`, from: orig }
   }
+  if (isUnconvertedPressureRange(first) || isUnconvertedAtRange(first)) return { shown: first }
   let conv = first
   const from: string[] = []
   // groups: 1 = leading space + qualifier, 2 = the qualifier alone (from QUAL), 3 = number, 4 = unit
@@ -118,6 +141,6 @@ const G_PER_CC = /g\s*\/\s*(?:cu\.?\s*cm|cm\s*3|cm³|cc)(?![a-z])/i
 export function densityForCard(value: string): CardValue {
   const shown = tidy(value).replace(G_PER_CC, 'g/mL').replace(/g\/mL\s+(-?\d+(?:\.\d+)?\s*°\s?C)/, 'g/mL at $1')
   const temp = AT_F.exec(shown)
-  if (!temp) return { shown }
+  if (!temp || isUnconvertedAtRange(shown)) return { shown }
   return { shown, converted: shown.replace(temp[0], `${temp[1]}${round1(((Number(temp[2]) - 32) * 5) / 9)} °C`), from: `${temp[2]} °F` }
 }

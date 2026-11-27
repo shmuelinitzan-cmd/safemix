@@ -96,10 +96,6 @@ describe('failed lookups create no card', () => {
     fakeNetwork({ record: () => json({}, 500) })
     await expect(lookup('abc')).rejects.toThrow('PubChem record 1 failed (HTTP 500).')
   })
-  it('the answer has no Record', async () => {
-    fakeNetwork({ record: () => json({}) })
-    await expect(lookup('abc')).rejects.toThrow()
-  })
   it('the name answer is not JSON', async () => {
     fakeNetwork({ cid: () => new Response('<html>busy</html>') })
     await expect(lookup('abc')).rejects.toThrow()
@@ -112,11 +108,11 @@ describe('failed lookups create no card', () => {
     vi.stubGlobal('fetch', async () => { throw new TypeError('offline') })
     await expect(lookup('abc')).rejects.toThrow('offline')
   })
-  // BUG: an empty Record is accepted. The result has a PubChem "name" with no value.
-  it.fails('BUG: an empty Record is rejected', async () => {
-    fakeNetwork({ record: () => json({ Record: {} }) })
-    await expect(lookup('abc')).rejects.toThrow()
-  })
+  it.each([{ Record: {} }, { Record: { RecordNumber: 1 } }, { Record: { RecordTitle: 'T' } }, {}])(
+    'an empty or incomplete record is rejected: %j', async (body) => {
+      fakeNetwork({ record: () => json(body) })
+      await expect(lookup('abc')).rejects.toThrow('PubChem returned an empty or incomplete record for CID 1.')
+    })
   it('a failed picture download still gives a card, without a picture', async () => {
     fakeNetwork({ png: () => new Response('', { status: 503 }) })
     const card = await attachStructure(cardFromLookup(await lookup('abc')))

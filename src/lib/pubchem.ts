@@ -33,7 +33,10 @@ export async function fetchCid(nameOrCas: string): Promise<number> {
 export async function fetchRecord(cid: number): Promise<Json> {
   const res = await fetch(`${PUG_VIEW}/data/compound/${cid}/JSON`)
   if (!res.ok) throw new Error(`PubChem record ${cid} failed (HTTP ${res.status}).`)
-  return (await res.json()).Record
+  const record = (await res.json())?.Record
+  // Without its number and title there is nothing to make a card from.
+  if (!record?.RecordNumber || !record.RecordTitle) throw new Error(`PubChem returned an empty or incomplete record for CID ${cid}.`)
+  return record
 }
 
 // A condition is a percentage phrase copied word for word from the value text, e.g.

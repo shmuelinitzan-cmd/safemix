@@ -83,22 +83,47 @@ describe('B5: never half-convert', () => {
     expect(vapourPressureForCard(v)).toEqual({ shown: v })
   })
 
-  it('a pressure range with a °F temperature: only the temperature changes, the unit stays visible', () => {
-    expect(vapourPressureForCard('10-20 kPa at 68 °F'))
-      .toEqual({ shown: '10-20 kPa at 68 °F', converted: '10-20 kPa at 20 °C', from: '68 °F' })
+  it.each(['212 °F to 220 °F', '212 °F - 220 °F', '10 kPa - 20 kPa at 20 °C'])('"%s" is left exactly as written', (v) => {
+    const card = v.includes('kPa') ? vapourPressureForCard(v) : temperatureForCard(v)
+    expect(card).toEqual({ shown: v })
   })
 
-  // BUG: gives "100 °C to 220 °F": two units in one value.
-  it.fails('BUG: a range that repeats °F is converted completely or not at all (with "to")', () => {
-    expect(temperatureForCard('212 °F to 220 °F').converted ?? '').not.toContain('°F')
+  it.each(['212 °F-220 °F', '212 °F – 220 °F', '212 °F — 220 °F', '212 °F to about 220 °F', '212 °F to 220', '-40 °F to -4 °F', '373 K - 383 K'])(
+    'other temperature range spellings are left as written: "%s"', (v) => {
+      expect(convertTemperature(v)).toBeUndefined()
+      expect(temperatureForCard(v)).toEqual({ shown: v })
+    })
+
+  it.each([
+    '10 kPa to 20 kPa', '10 kPa – 20 kPa', '10 kPa to 20', '10 mmHg - 20 kPa', 'about 10 kPa to about 20 kPa',
+    '10-20 kPa at 68 °F', // the pressure cannot be converted, so the temperature is not either
+  ])('other pressure ranges are left as written: "%s"', (v) => {
+    expect(vapourPressureForCard(v)).toEqual({ shown: v })
   })
-  // BUG: gives "100 °C - 220 °F".
-  it.fails('BUG: a range that repeats °F is converted completely or not at all (with a dash)', () => {
-    expect(temperatureForCard('212 °F - 220 °F').converted ?? '').not.toContain('°F')
+
+  it.each(['10 kPa - 20 kPa', '10 kPa to 20'])('convertPressure does not drop the end of "%s"', (v) => {
+    expect(convertPressure(v)).toBeUndefined()
   })
-  // BUG: gives "75 mmHg - 20 kPa at 20 °C".
-  it.fails('BUG: a range that repeats kPa is converted completely or not at all', () => {
-    expect(vapourPressureForCard('10 kPa - 20 kPa at 20 °C').converted ?? '').not.toContain('kPa')
+
+  it.each([
+    '5 mmHg at 68 °F to 86 °F', '5 mmHg at 68 °F - 86 °F', '5 mmHg at 68 °F – 86 °F', '5 mmHg at 68-86 °F', '5 mmHg at 68 °F to 86',
+    '5 mmHg at 20 °C to 86 °F', '10 kPa at 68 °F to 86 °F', // the pressure is not converted either
+  ])('vapour pressure with a measuring-temperature range is left as written: "%s"', (v) => {
+    expect(vapourPressureForCard(v)).toEqual({ shown: v })
+  })
+
+  it.each(['at 68 °F to 86 °F', 'at 68 °F - 86 °F', 'at 68-86 °F'])('density "%s": only the unit spelling changes', (range) => {
+    expect(densityForCard(`1.25 g/cu cm ${range}`)).toEqual({ shown: `1.25 g/mL ${range}` })
+  })
+
+  it('a measuring-temperature range already in °C does not stop the pressure conversion', () => {
+    expect(vapourPressureForCard('10 kPa at 20 °C to 30 °C'))
+      .toEqual({ shown: '10 kPa at 20 °C to 30 °C', converted: '75 mmHg at 20 °C to 30 °C', from: '10 kPa' })
+  })
+
+  it('a range already in mmHg can still have its °F temperature converted', () => {
+    expect(vapourPressureForCard('10-20 mmHg at 68 °F'))
+      .toEqual({ shown: '10-20 mmHg at 68 °F', converted: '10-20 mmHg at 20 °C', from: '68 °F' })
   })
 })
 
@@ -129,7 +154,7 @@ describe('B7: vapour pressure picks the value measured closest to 20 °C', () =>
   it('takes the first value when none has a temperature', () => expect(shown('1 mmHg ; 2 mmHg')).toBe('1 mmHg'))
   it('skips empty parts', () => expect(shown(' ; 1 mmHg ; ; ')).toBe('1 mmHg'))
   it('reads "@" as "at"', () => expect(shown('1 mmHg @ 50 °C ; 2 mmHg @ 20 °C')).toBe('2 mmHg at 20 °C'))
-  // BUG (limitation): a temperature in kelvin is ignored, so the 100 °C value is chosen.
+  // BUG (GitHub issue #4): a temperature in kelvin is ignored, so the 100 °C value is chosen.
   it.fails('BUG: a temperature in K counts too', () => {
     expect(shown('1 mmHg at 100 °C ; 2 mmHg at 293.15 K')).toBe('2 mmHg at 293.15 K')
   })
@@ -165,7 +190,7 @@ describe('B9: density', () => {
     expect(densityForCard('1.25 g/cu cm at 68 °F'))
       .toEqual({ shown: '1.25 g/mL at 68 °F', converted: '1.25 g/mL at 20 °C', from: '68 °F' })
   })
-  // BUG (minor): without the word "at", a °F measuring temperature is not converted.
+  // BUG (GitHub issue #5): without the word "at", a °F measuring temperature is not converted.
   it.fails('BUG: converts a °F measuring temperature written without "at"', () => {
     expect(densityForCard('1.25 g/cu cm 68 °F').converted).toBe('1.25 g/mL at 20 °C')
   })
